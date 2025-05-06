@@ -1,34 +1,33 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <div className="flex flex-col min-h-screen" style={{ backgroundColor: '#c4e4f7' }}>
+      {/* Cabeçalho */}
+      <header className="bg-white shadow-md">
+        <nav className="container mx-auto px-4 py-4">
+          <h1 className="text-2xl font-bold text-gray-800">Meu Site</h1>
+        </nav>
+      </header>
+
+      {/* Conteúdo Principal */}
+      <main className="flex-grow container mx-auto px-4 py-8">
+        <section className="rounded-lg shadow-md p-6 h-full" style={{ backgroundColor: '#3192ca' }}>
+          <h2 className="text-xl font-semibold mb-4 text-white">Bem-vindo ao Meu Site</h2>
+          <p className="text-white">
+            Este é um site criado com React e TailwindCSS. Aqui você pode adicionar seu conteúdo.
+          </p>
+        </section>
+      </main>
+
+      {/* Rodapé */}
+      <footer className="bg-gray-800 text-white">
+        <div className="container mx-auto px-4 py-6">
+          <p className="text-center">&copy; 2024 Meu Site. Todos os direitos reservados.</p>
+        </div>
+      </footer>
+    </div>
   )
 }
 
