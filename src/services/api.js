@@ -1,11 +1,16 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:7223',
-  timeout: 10000,
+  baseURL: 'https://localhost:7223',
+  timeout: 15000,
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
+  },
+  maxContentLength: 50 * 1024 * 1024,
+  maxBodyLength: 50 * 1024 * 1024,
+  validateStatus: function (status) {
+    return status >= 200 && status < 500;
   }
 });
 
@@ -16,7 +21,8 @@ api.interceptors.request.use(request => {
     method: request.method,
     headers: request.headers,
     data: request.data,
-    baseURL: request.baseURL
+    baseURL: request.baseURL,
+    fullURL: `${request.baseURL}${request.url}`
   });
   return request;
 });
@@ -27,7 +33,9 @@ api.interceptors.response.use(
     console.log('✅ Resposta recebida:', {
       status: response.status,
       data: response.data,
-      headers: response.headers
+      headers: response.headers,
+      url: response.config.url,
+      fullURL: `${response.config.baseURL}${response.config.url}`
     });
     return response;
   },
@@ -39,6 +47,8 @@ api.interceptors.response.use(
       status: error.response?.status,
       config: {
         url: error.config?.url,
+        baseURL: error.config?.baseURL,
+        fullURL: error.config ? `${error.config.baseURL}${error.config.url}` : 'URL não disponível',
         method: error.config?.method,
         headers: error.config?.headers,
         data: error.config?.data

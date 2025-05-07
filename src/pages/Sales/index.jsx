@@ -24,12 +24,12 @@ function Sales() {
   }
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 py-8">
-      <div className="bg-white rounded-lg shadow-lg p-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-8">Controle de Vendas</h1>
+    <div className="content-container">
+      <div className="bg-white rounded-lg shadow-lg p-4">
+        <h1 className="text-2xl font-bold text-gray-800 mb-4">Controle de Vendas</h1>
         
         {error && (
-          <div className="bg-red-100 text-red-700 p-4 rounded-lg mb-4">
+          <div className="bg-red-100 text-red-700 p-3 rounded-lg mb-3">
             {error}
           </div>
         )}
@@ -39,19 +39,13 @@ function Sales() {
         ) : vendas.length === 0 ? (
           <p className="text-center text-gray-600">Nenhuma venda registrada</p>
         ) : (
-          <div className="grid gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {vendas.map((venda) => (
-              <div key={venda.id} className="border rounded-lg p-4">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h3 className="font-bold text-lg">Venda #{venda.id}</h3>
-                    <p className="text-gray-600">Data: {new Date(venda.data).toLocaleDateString()}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-bold text-lg">R$ {venda.valorTotal.toFixed(2)}</p>
-                    <p className="text-gray-600">{venda.quantidade} itens</p>
-                  </div>
-                </div>
+              <div key={venda.id} className="border rounded-lg p-3 hover:shadow-lg transition-shadow">
+                <h3 className="font-bold text-base mb-1">Venda #{venda.id}</h3>
+                <p className="text-gray-600 text-sm mb-1">Data: {new Date(venda.data).toLocaleDateString()}</p>
+                <p className="text-gray-600 text-sm mb-1">Total: R$ {venda.total.toFixed(2)}</p>
+                <p className="text-gray-500 text-xs">Itens: {venda.itens?.length || 0}</p>
               </div>
             ))}
           </div>

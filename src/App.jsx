@@ -38,21 +38,21 @@ function App() {
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#c4e4f7' }}>
       {/* Navegação */}
-      <nav className="bg-white shadow-md sticky top-0 z-50">
-        <div className="w-full max-w-7xl mx-auto px-4 py-4">
+      <nav className="bg-white shadow-md sticky top-0 z-50 w-full">
+        <div className="nav-container">
           <div className="flex justify-between items-center">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <img 
                 src={logo} 
                 alt="Ice Safe Logo" 
-                className="h-16 w-auto"
+                className="nav-logo"
               />
-              <h1 className="text-2xl font-bold text-gray-800">Ice Safe</h1>
+              <h1 className="text-xl font-bold text-gray-800">Ice Safe</h1>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2">
               <button 
                 onClick={() => setCurrentPage('home')}
-                className={`px-4 py-2 rounded-lg transition-colors ${
+                className={`nav-button rounded-lg transition-colors ${
                   currentPage === 'home' 
                     ? 'bg-blue-500 text-white' 
                     : 'text-gray-600 hover:bg-gray-100'
@@ -62,7 +62,7 @@ function App() {
               </button>
               <button 
                 onClick={handleInventoryAccess}
-                className={`px-4 py-2 rounded-lg transition-colors ${
+                className={`nav-button rounded-lg transition-colors ${
                   currentPage === 'inventory' 
                     ? 'bg-blue-500 text-white' 
                     : 'text-gray-600 hover:bg-gray-100'
@@ -72,7 +72,7 @@ function App() {
               </button>
               <button 
                 onClick={() => setCurrentPage('sales')}
-                className={`px-4 py-2 rounded-lg transition-colors ${
+                className={`nav-button rounded-lg transition-colors ${
                   currentPage === 'sales' 
                     ? 'bg-blue-500 text-white' 
                     : 'text-gray-600 hover:bg-gray-100'
@@ -87,7 +87,7 @@ function App() {
                 <img 
                   src={carrinhoIcon} 
                   alt="Carrinho" 
-                  className="h-8 w-auto"
+                  className="h-6 w-auto"
                 />
               </button>
             </div>
@@ -96,13 +96,15 @@ function App() {
       </nav>
 
       {/* Conteúdo Principal */}
-      <main className="flex-grow">
-        {renderPage()}
+      <main className="flex-grow w-full">
+        <div className="content-container">
+          {renderPage()}
+        </div>
       </main>
 
       {/* Rodapé */}
-      <footer className="bg-gray-800 text-white">
-        <div className="w-full max-w-7xl mx-auto px-4 py-6">
+      <footer className="footer bg-gray-800 text-white w-full">
+        <div className="content-container">
           <p className="text-center">&copy; 2024 Ice Safe. Todos os direitos reservados.</p>
         </div>
       </footer>

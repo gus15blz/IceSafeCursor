@@ -127,7 +127,7 @@ function ProductForm() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Modal de Sucesso */}
       {showSuccessModal && (
         <div className="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-2 animate-fade-in-down">
@@ -139,8 +139,8 @@ function ProductForm() {
       )}
 
       {/* Formulário de Cadastro */}
-      <div className="bg-white p-6 rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold mb-6">Cadastrar Produto</h2>
+      <div className="bg-white p-4 rounded-lg shadow-md">
+        <h2 className="text-xl font-bold mb-4">Cadastrar Produto</h2>
 
         {message.text && (
           <div className={`p-3 mb-4 rounded ${
@@ -151,71 +151,73 @@ function ProductForm() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="nome" className="block text-sm font-medium mb-1">
-              Nome do Produto
-            </label>
-            <input
-              type="text"
-              id="nome"
-              name="nome"
-              value={formData.nome}
-              onChange={handleChange}
-              required
-              className="w-full p-2 border rounded"
-              placeholder="Digite o nome do produto"
-            />
-          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="nome" className="block text-sm font-medium mb-1">
+                Nome do Produto
+              </label>
+              <input
+                type="text"
+                id="nome"
+                name="nome"
+                value={formData.nome}
+                onChange={handleChange}
+                required
+                className="w-full p-2 border rounded"
+                placeholder="Digite o nome do produto"
+              />
+            </div>
 
-          <div>
-            <label htmlFor="preco" className="block text-sm font-medium mb-1">
-              Preço
-            </label>
-            <input
-              type="number"
-              id="preco"
-              name="preco"
-              value={formData.preco}
-              onChange={handleChange}
-              required
-              step="0.01"
-              min="0"
-              className="w-full p-2 border rounded"
-              placeholder="Digite o preço"
-            />
-          </div>
+            <div>
+              <label htmlFor="preco" className="block text-sm font-medium mb-1">
+                Preço
+              </label>
+              <input
+                type="number"
+                id="preco"
+                name="preco"
+                value={formData.preco}
+                onChange={handleChange}
+                required
+                step="0.01"
+                min="0"
+                className="w-full p-2 border rounded"
+                placeholder="Digite o preço"
+              />
+            </div>
 
-          <div>
-            <label htmlFor="quantidade" className="block text-sm font-medium mb-1">
-              Quantidade
-            </label>
-            <input
-              type="number"
-              id="quantidade"
-              name="quantidade"
-              value={formData.quantidade}
-              onChange={handleChange}
-              required
-              min="0"
-              className="w-full p-2 border rounded"
-              placeholder="Digite a quantidade"
-            />
-          </div>
+            <div>
+              <label htmlFor="quantidade" className="block text-sm font-medium mb-1">
+                Quantidade
+              </label>
+              <input
+                type="number"
+                id="quantidade"
+                name="quantidade"
+                value={formData.quantidade}
+                onChange={handleChange}
+                required
+                min="0"
+                className="w-full p-2 border rounded"
+                placeholder="Digite a quantidade"
+              />
+            </div>
 
-          <div>
-            <label htmlFor="imgLink" className="block text-sm font-medium mb-1">
-              Link da Imagem
-            </label>
-            <input
-              type="url"
-              id="imgLink"
-              name="imgLink"
-              value={formData.imgLink}
-              onChange={handleChange}
-              required
-              className="w-full p-2 border rounded"
-              placeholder="Cole o link da imagem"
-            />
+            <div>
+              <label htmlFor="imgLink" className="block text-sm font-medium mb-1">
+                Link da Imagem
+              </label>
+              <input
+                type="url"
+                id="imgLink"
+                name="imgLink"
+                value={formData.imgLink}
+                onChange={handleChange}
+                required
+                className="w-full p-2 border rounded"
+                placeholder="Cole o link da imagem"
+              />
+            </div>
           </div>
 
           <button
@@ -230,29 +232,33 @@ function ProductForm() {
         </form>
       </div>
 
-      {/* Lista de Produtos */}
-      <div className="bg-white p-6 rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold mb-6">Produtos Cadastrados</h2>
+      {/* Tabela de Produtos */}
+      <div className="bg-white p-4 rounded-lg shadow-md">
+        <h2 className="text-xl font-bold mb-4">Produtos Cadastrados</h2>
         {loading ? (
           <p className="text-center text-gray-600">Carregando produtos...</p>
         ) : produtos.length === 0 ? (
           <p className="text-center text-gray-600">Nenhum produto cadastrado</p>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {produtos.map((produto) => (
-              <div key={produto.id} className="border rounded-lg p-4">
-                {produto.imgLink && (
-                  <img 
-                    src={produto.imgLink} 
-                    alt={produto.nome}
-                    className="w-full h-48 object-cover rounded-lg mb-4"
-                  />
-                )}
-                <h3 className="font-bold text-lg">{produto.nome}</h3>
-                <p className="text-gray-600">Preço: R$ {produto.preco.toFixed(2)}</p>
-                <p className="text-gray-600">Quantidade: {produto.quantidade}</p>
-              </div>
-            ))}
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Preço</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantidade</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {produtos.map((produto) => (
+                  <tr key={produto.id} className="hover:bg-gray-50">
+                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{produto.nome}</td>
+                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">R$ {produto.preco.toFixed(2)}</td>
+                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{produto.quantidade}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>
