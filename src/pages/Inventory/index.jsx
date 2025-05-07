@@ -1,13 +1,14 @@
 import React from 'react'
+import ProductForm from '../../components/ProductForm'
 
 function Inventory() {
   return (
-    <section className="rounded-lg shadow-md p-6 h-full" style={{ backgroundColor: '#3192ca' }}>
-      <h2 className="text-xl font-semibold mb-4 text-white">Controle de Estoque</h2>
-      <p className="text-white">
-        Aqui você pode gerenciar todo o seu estoque de produtos.
-      </p>
-    </section>
+    <div className="w-full max-w-7xl mx-auto px-4 py-8">
+      <div className="bg-white rounded-lg shadow-lg p-8">
+        <h1 className="text-3xl font-bold text-gray-800 mb-8">Controle de Estoque</h1>
+        <ProductForm />
+      </div>
+    </div>
   )
 }
 
