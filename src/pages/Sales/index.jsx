@@ -1,64 +1,50 @@
-import React, { useState, useEffect } from 'react'
-import api from '../../services/api'
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 
 function Sales() {
-  const [vendas, setVendas] = useState([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [salesData, setSalesData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetchVendas()
-  }, [])
+    // Função para buscar dados da API
+    const fetchSalesData = async () => {
+      try {
+        const response = await axios.get('https://api.exemplo.com/sales'); // Substitua pela URL da sua API
+        setSalesData(response.data);
+      } catch (err) {
+        setError('Erro ao carregar os dados de vendas.');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const fetchVendas = async () => {
-    try {
-      setLoading(true)
-      const response = await api.get('/api/Venda')
-      setVendas(response.data)
-    } catch (error) {
-      console.error('Erro ao buscar vendas:', error)
-      setError('Erro ao carregar vendas. Verifique se a API está rodando.')
-    } finally {
-      setLoading(false)
-    }
+    fetchSalesData();
+  }, []);
+
+  if (loading) {
+    return <p>Carregando dados de vendas...</p>;
+  }
+
+  if (error) {
+    return <p>{error}</p>;
   }
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 py-8">
-      <div className="bg-white rounded-lg shadow-lg p-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-8">Controle de Vendas</h1>
-        
-        {error && (
-          <div className="bg-red-100 text-red-700 p-4 rounded-lg mb-4">
-            {error}
-          </div>
-        )}
-
-        {loading ? (
-          <p className="text-center text-gray-600">Carregando vendas...</p>
-        ) : vendas.length === 0 ? (
-          <p className="text-center text-gray-600">Nenhuma venda registrada</p>
-        ) : (
-          <div className="grid gap-4">
-            {vendas.map((venda) => (
-              <div key={venda.id} className="border rounded-lg p-4">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h3 className="font-bold text-lg">Venda #{venda.id}</h3>
-                    <p className="text-gray-600">Data: {new Date(venda.data).toLocaleDateString()}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-bold text-lg">R$ {venda.valorTotal.toFixed(2)}</p>
-                    <p className="text-gray-600">{venda.quantidade} itens</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+    <div className="sales-page">
+      <h2 className="text-2xl font-bold">Página de Vendas</h2>
+      <p>Bem-vindo à página de vendas. Aqui você pode gerenciar suas vendas.</p>
+      <ul>
+        {salesData.map((sale) => (
+          <li key={sale.id}>
+            <p>Produto: {sale.productName}</p>
+            <p>Quantidade: {sale.quantity}</p>
+            <p>Preço: R$ {sale.price}</p>
+          </li>
+        ))}
+      </ul>
     </div>
-  )
+  );
 }
 
-export default Sales 
+export default Sales;
