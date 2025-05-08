@@ -85,3 +85,6 @@ function Home() {
 }
 
 export default Home 
+
+
+// O código acima é um exemplo de uma página inicial de um aplicativo React que exibe produtos disponíveis. Ele utiliza o Tailwind CSS para estilização e Axios para fazer requisições à API. A seção inicial apresenta uma imagem e um título, enquanto a seção de produtos lista os produtos disponíveis, mostrando suas imagens, nomes, preços e quantidades em estoque. O código também lida com estados de carregamento e erro ao buscar os dados da API.
