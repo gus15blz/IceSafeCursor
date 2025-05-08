@@ -12,6 +12,8 @@ function ProductForm() {
   const [produtos, setProdutos] = useState([])
   const [loading, setLoading] = useState(false)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [editingProduct, setEditingProduct] = useState(null)
+  const [showEditModal, setShowEditModal] = useState(false)
 
   // Buscar produtos ao carregar o componente
   useEffect(() => {
@@ -25,7 +27,16 @@ function ProductForm() {
       console.log('Fazendo requisição GET para /api/Produto')
       const response = await api.get('/api/Produto')
       console.log('Produtos recebidos:', response.data)
-      setProdutos(response.data)
+      
+      if (Array.isArray(response.data)) {
+        setProdutos(response.data)
+      } else {
+        console.error('Dados recebidos não são um array:', response.data)
+        setMessage({
+          type: 'error',
+          text: 'Formato de dados inválido recebido da API'
+        })
+      }
     } catch (error) {
       console.error('Erro detalhado ao buscar produtos:', {
         message: error.message,
@@ -39,7 +50,11 @@ function ProductForm() {
       if (error.code === 'ECONNABORTED') {
         errorMessage += 'A API demorou muito para responder.'
       } else if (!error.response) {
-        errorMessage += 'Não foi possível conectar com a API. Verifique se ela está rodando em http://localhost:7223'
+        errorMessage += 'Não foi possível conectar com a API. Verifique se ela está rodando em https://localhost:7223'
+      } else if (error.response.status === 404) {
+        errorMessage += 'Endpoint não encontrado. Verifique se a rota /api/Produto existe.'
+      } else if (error.response.status === 500) {
+        errorMessage += 'Erro interno do servidor. Verifique os logs da API.'
       } else {
         errorMessage += error.response.data?.message || error.message
       }
@@ -126,6 +141,94 @@ function ProductForm() {
     }
   }
 
+  const handleEdit = (produto) => {
+    setEditingProduct(produto)
+    setFormData({
+      nome: produto.nome,
+      preco: produto.preco.toString(),
+      quantidade: produto.quantidade.toString(),
+      imgLink: produto.imgLink
+    })
+    setShowEditModal(true)
+  }
+
+  const handleUpdate = async (e) => {
+    e.preventDefault()
+    try {
+      setLoading(true)
+      console.log('Preparando dados para atualização:', formData)
+      
+      const produtoData = {
+        id: editingProduct.id,
+        nome: formData.nome,
+        preco: parseFloat(formData.preco),
+        quantidade: parseInt(formData.quantidade),
+        imgLink: formData.imgLink
+      }
+
+      console.log('Dados formatados para atualização:', produtoData)
+      console.log('Fazendo requisição PUT para /api/Produto/' + editingProduct.id)
+
+      const response = await api.put(`/api/Produto/${editingProduct.id}`, produtoData)
+      console.log('Resposta da API:', response.data)
+      
+      setShowSuccessModal(true)
+      setMessage({
+        type: 'success',
+        text: 'Produto atualizado com sucesso!'
+      })
+      
+      setShowEditModal(false)
+      setEditingProduct(null)
+      setFormData({
+        nome: '',
+        preco: '',
+        quantidade: '',
+        imgLink: ''
+      })
+
+      fetchProdutos()
+
+      setTimeout(() => {
+        setShowSuccessModal(false)
+      }, 3000)
+
+    } catch (error) {
+      console.error('Erro detalhado ao atualizar produto:', {
+        message: error.message,
+        code: error.code,
+        response: error.response,
+        request: error.request
+      })
+      
+      let errorMessage = 'Erro ao atualizar produto. '
+      
+      if (error.code === 'ECONNABORTED') {
+        errorMessage += 'A API demorou muito para responder.'
+      } else if (!error.response) {
+        errorMessage += 'Não foi possível conectar com a API. Verifique se ela está rodando em https://localhost:7223'
+      } else {
+        errorMessage += error.response.data?.message || error.message
+      }
+
+      setMessage({
+        type: 'error',
+        text: errorMessage
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleAddToCart = (produto) => {
+    // Aqui você pode implementar a lógica para adicionar ao carrinho
+    console.log('Produto adicionado ao carrinho:', produto)
+    setMessage({
+      type: 'success',
+      text: `${produto.nome} adicionado ao carrinho!`
+    })
+  }
+
   return (
     <div className="space-y-6">
       {/* Modal de Sucesso */}
@@ -135,6 +238,107 @@ function ProductForm() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
           </svg>
           <span>Produto cadastrado com sucesso!</span>
+        </div>
+      )}
+
+      {/* Modal de Edição */}
+      {showEditModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h2 className="text-xl font-bold mb-4">Editar Produto</h2>
+            <form onSubmit={handleUpdate} className="space-y-4">
+              <div>
+                <label htmlFor="edit-nome" className="block text-sm font-medium mb-1">
+                  Nome do Produto
+                </label>
+                <input
+                  type="text"
+                  id="edit-nome"
+                  name="nome"
+                  value={formData.nome}
+                  onChange={handleChange}
+                  required
+                  className="w-full p-2 border rounded"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="edit-preco" className="block text-sm font-medium mb-1">
+                  Preço
+                </label>
+                <input
+                  type="number"
+                  id="edit-preco"
+                  name="preco"
+                  value={formData.preco}
+                  onChange={handleChange}
+                  required
+                  step="0.01"
+                  min="0"
+                  className="w-full p-2 border rounded"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="edit-quantidade" className="block text-sm font-medium mb-1">
+                  Quantidade
+                </label>
+                <input
+                  type="number"
+                  id="edit-quantidade"
+                  name="quantidade"
+                  value={formData.quantidade}
+                  onChange={handleChange}
+                  required
+                  min="0"
+                  className="w-full p-2 border rounded"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="edit-imgLink" className="block text-sm font-medium mb-1">
+                  Link da Imagem
+                </label>
+                <input
+                  type="url"
+                  id="edit-imgLink"
+                  name="imgLink"
+                  value={formData.imgLink}
+                  onChange={handleChange}
+                  required
+                  className="w-full p-2 border rounded"
+                />
+              </div>
+
+              <div className="flex space-x-2">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className={`flex-1 p-2 rounded text-white ${
+                    loading ? 'bg-gray-400' : 'bg-blue-500 hover:bg-blue-600'
+                  }`}
+                >
+                  {loading ? 'Salvando...' : 'Salvar'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowEditModal(false)
+                    setEditingProduct(null)
+                    setFormData({
+                      nome: '',
+                      preco: '',
+                      quantidade: '',
+                      imgLink: ''
+                    })
+                  }}
+                  className="flex-1 p-2 rounded bg-gray-500 text-white hover:bg-gray-600"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
 
@@ -232,7 +436,7 @@ function ProductForm() {
         </form>
       </div>
 
-      {/* Tabela de Produtos */}
+      {/* Lista de Produtos */}
       <div className="bg-white p-4 rounded-lg shadow-md">
         <h2 className="text-xl font-bold mb-4">Produtos Cadastrados</h2>
         {loading ? (
@@ -240,25 +444,27 @@ function ProductForm() {
         ) : produtos.length === 0 ? (
           <p className="text-center text-gray-600">Nenhum produto cadastrado</p>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Preço</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantidade</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {produtos.map((produto) => (
-                  <tr key={produto.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{produto.nome}</td>
-                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">R$ {produto.preco.toFixed(2)}</td>
-                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{produto.quantidade}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="space-y-4">
+            {produtos.map((produto) => (
+              <div 
+                key={produto.id} 
+                className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
+              >
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-gray-900">{produto.nome}</h3>
+                  <div className="mt-1 text-sm text-gray-600">
+                    <span className="mr-4">Preço: R$ {produto.preco.toFixed(2)}</span>
+                    <span>Quantidade: {produto.quantidade}</span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => handleEdit(produto)}
+                  className="px-4 py-2 text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md transition-colors"
+                >
+                  Editar
+                </button>
+              </div>
+            ))}
           </div>
         )}
       </div>
