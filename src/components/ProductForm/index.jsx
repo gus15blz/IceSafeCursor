@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import api from '../../services/api'
 
 function ProductForm() {
@@ -15,53 +15,27 @@ function ProductForm() {
   const [editingProduct, setEditingProduct] = useState(null)
   const [showEditModal, setShowEditModal] = useState(false)
 
-  // Buscar produtos ao carregar o componente
   useEffect(() => {
-    console.log('Iniciando busca de produtos...')
     fetchProdutos()
   }, [])
 
   const fetchProdutos = async () => {
     try {
       setLoading(true)
-      console.log('Fazendo requisição GET para /api/Produto')
       const response = await api.get('/api/Produto')
-      console.log('Produtos recebidos:', response.data)
-      
       if (Array.isArray(response.data)) {
         setProdutos(response.data)
       } else {
-        console.error('Dados recebidos não são um array:', response.data)
         setMessage({
           type: 'error',
           text: 'Formato de dados inválido recebido da API'
         })
       }
     } catch (error) {
-      console.error('Erro detalhado ao buscar produtos:', {
-        message: error.message,
-        code: error.code,
-        response: error.response,
-        request: error.request
-      })
-      
-      let errorMessage = 'Erro ao carregar produtos. '
-      
-      if (error.code === 'ECONNABORTED') {
-        errorMessage += 'A API demorou muito para responder.'
-      } else if (!error.response) {
-        errorMessage += 'Não foi possível conectar com a API. Verifique se ela está rodando em https://localhost:7223'
-      } else if (error.response.status === 404) {
-        errorMessage += 'Endpoint não encontrado. Verifique se a rota /api/Produto existe.'
-      } else if (error.response.status === 500) {
-        errorMessage += 'Erro interno do servidor. Verifique os logs da API.'
-      } else {
-        errorMessage += error.response.data?.message || error.message
-      }
-
+      console.error('Erro ao buscar produtos:', error)
       setMessage({
         type: 'error',
-        text: errorMessage
+        text: 'Erro ao carregar produtos. Verifique se a API está rodando.'
       })
     } finally {
       setLoading(false)
@@ -80,7 +54,6 @@ function ProductForm() {
     e.preventDefault()
     try {
       setLoading(true)
-      console.log('Preparando dados para envio:', formData)
       
       const produtoData = {
         nome: formData.nome,
@@ -89,16 +62,14 @@ function ProductForm() {
         imgLink: formData.imgLink
       }
 
-      console.log('Dados formatados para envio:', produtoData)
-      console.log('Fazendo requisição POST para /api/Produto')
-
-      const response = await api.post('/api/Produto', produtoData)
-      console.log('Resposta da API:', response.data)
-
-      // Mostrar modal de sucesso
-      setShowSuccessModal(true)
+      await api.post('/api/Produto', produtoData)
       
-      // Limpar formulário
+      setShowSuccessModal(true)
+      setMessage({
+        type: 'success',
+        text: 'Produto cadastrado com sucesso!'
+      })
+      
       setFormData({
         nome: '',
         preco: '',
@@ -106,35 +77,17 @@ function ProductForm() {
         imgLink: ''
       })
 
-      // Atualizar lista de produtos
       fetchProdutos()
 
-      // Esconder modal após 3 segundos
       setTimeout(() => {
         setShowSuccessModal(false)
       }, 3000)
 
     } catch (error) {
-      console.error('Erro detalhado ao cadastrar produto:', {
-        message: error.message,
-        code: error.code,
-        response: error.response,
-        request: error.request
-      })
-      
-      let errorMessage = 'Erro ao cadastrar produto. '
-      
-      if (error.code === 'ECONNABORTED') {
-        errorMessage += 'A API demorou muito para responder.'
-      } else if (!error.response) {
-        errorMessage += 'Não foi possível conectar com a API. Verifique se ela está rodando em http://localhost:7223'
-      } else {
-        errorMessage += error.response.data?.message || error.message
-      }
-
+      console.error('Erro ao cadastrar produto:', error)
       setMessage({
         type: 'error',
-        text: errorMessage
+        text: 'Erro ao cadastrar produto. Verifique os dados e tente novamente.'
       })
     } finally {
       setLoading(false)
@@ -156,7 +109,6 @@ function ProductForm() {
     e.preventDefault()
     try {
       setLoading(true)
-      console.log('Preparando dados para atualização:', formData)
       
       const produtoData = {
         id: editingProduct.id,
@@ -166,11 +118,7 @@ function ProductForm() {
         imgLink: formData.imgLink
       }
 
-      console.log('Dados formatados para atualização:', produtoData)
-      console.log('Fazendo requisição PUT para /api/Produto/' + editingProduct.id)
-
-      const response = await api.put(`/api/Produto/${editingProduct.id}`, produtoData)
-      console.log('Resposta da API:', response.data)
+      await api.put(`/api/Produto/${editingProduct.id}`, produtoData)
       
       setShowSuccessModal(true)
       setMessage({
@@ -194,39 +142,34 @@ function ProductForm() {
       }, 3000)
 
     } catch (error) {
-      console.error('Erro detalhado ao atualizar produto:', {
-        message: error.message,
-        code: error.code,
-        response: error.response,
-        request: error.request
-      })
-      
-      let errorMessage = 'Erro ao atualizar produto. '
-      
-      if (error.code === 'ECONNABORTED') {
-        errorMessage += 'A API demorou muito para responder.'
-      } else if (!error.response) {
-        errorMessage += 'Não foi possível conectar com a API. Verifique se ela está rodando em https://localhost:7223'
-      } else {
-        errorMessage += error.response.data?.message || error.message
-      }
-
+      console.error('Erro ao atualizar produto:', error)
       setMessage({
         type: 'error',
-        text: errorMessage
+        text: 'Erro ao atualizar produto. Verifique os dados e tente novamente.'
       })
     } finally {
       setLoading(false)
     }
   }
 
-  const handleAddToCart = (produto) => {
-    // Aqui você pode implementar a lógica para adicionar ao carrinho
-    console.log('Produto adicionado ao carrinho:', produto)
-    setMessage({
-      type: 'success',
-      text: `${produto.nome} adicionado ao carrinho!`
-    })
+  const handleDelete = async (id) => {
+    try {
+      setLoading(true)
+      await api.delete(`/api/Produto/${id}`)
+      setMessage({
+        type: 'success',
+        text: 'Produto excluído com sucesso!'
+      })
+      fetchProdutos()
+    } catch (error) {
+      console.error('Erro ao excluir produto:', error)
+      setMessage({
+        type: 'error',
+        text: 'Erro ao excluir produto. Tente novamente.'
+      })
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -237,7 +180,7 @@ function ProductForm() {
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
           </svg>
-          <span>Produto cadastrado com sucesso!</span>
+          <span>Operação realizada com sucesso!</span>
         </div>
       )}
 
@@ -457,12 +400,20 @@ function ProductForm() {
                     <span>Quantidade: {produto.quantidade}</span>
                   </div>
                 </div>
-                <button
-                  onClick={() => handleEdit(produto)}
-                  className="px-4 py-2 text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md transition-colors"
-                >
-                  Editar
-                </button>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => handleEdit(produto)}
+                    className="px-4 py-2 text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md transition-colors"
+                  >
+                    Editar
+                  </button>
+                  <button
+                    onClick={() => handleDelete(produto.id)}
+                    className="px-4 py-2 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded-md transition-colors"
+                  >
+                    Excluir
+                  </button>
+                </div>
               </div>
             ))}
           </div>

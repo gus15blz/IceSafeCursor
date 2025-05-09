@@ -39,14 +39,8 @@ async function testApi() {
     // Teste 3: Tentar POST
     console.log('\n📡 Teste 3: Tentando POST...');
     try {
-      const postData = {
-        nome: "Teste",
-        preco: 10.99,
-        quantidade: 1,
-        imgLink: "https://exemplo.com/imagem.jpg"
-      };
 
-      const response = await axios.post('http://localhost:7223/api/Produto', postData, {
+      const response = await axios.post('https://localhost:7223/api/Produto',  {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
