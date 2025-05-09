@@ -1,13 +1,22 @@
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
   text-align: center;
+  overflow-x: hidden;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  overflow-x: hidden;
 }
 
 .logo {
-  height: 6em;
-  padding: 1.5em;
+  height: 4em;
+  padding: 0.5em;
   will-change: filter;
   transition: filter 300ms;
 }
@@ -34,9 +43,120 @@
 }
 
 .card {
-  padding: 2em;
+  padding: 1em;
 }
 
 .read-the-docs {
   color: #888;
+}
+
+/* Estilos para modais */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 15px;
+  border-radius: 8px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+/* Ajustes de layout */
+.nav-container {
+  padding: 0.5rem 1rem;
+  width: 100%;
+  max-width: 100%;
+}
+
+.nav-logo {
+  height: 3rem;
+}
+
+.nav-button {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+}
+
+.content-container {
+  width: 100%;
+  max-width: 100%;
+  padding: 1rem;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+  width: 100%;
+}
+
+.product-card {
+  padding: 0.75rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.product-image {
+  height: 180px;
+  width: 100%;
+  object-fit: cover;
+}
+
+.footer {
+  padding: 1rem;
+  font-size: 0.9rem;
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Ajustes para garantir que o conteúdo não ultrapasse a largura da tela */
+* {
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+/* Ajustes para o layout principal */
+.min-h-screen {
+  min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+/* Ajustes para o conteúdo principal */
+.flex-grow {
+  flex: 1;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+/* Ajustes para as seções */
+section {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+/* Ajustes para os cards */
+.bg-white {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  box-sizing: border-box;
 }
