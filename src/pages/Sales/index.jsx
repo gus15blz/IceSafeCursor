@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import  { useState, useEffect } from 'react'
 import api from '../../services/api'
 
 function Sales() {
@@ -56,3 +56,5 @@ function Sales() {
 }
 
 export default Sales 
+
+//teste
