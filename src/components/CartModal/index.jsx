@@ -84,20 +84,19 @@ function CartModal({ isOpen, onClose }) {
                 <p>R$ {getTotal().toFixed(2)}</p>
               </div>
               <button
-                onClick={() => {
-                  if (cart.length === 0) {
-                    setShowEmptyCartModal(true);
-                    return;
-                  }
-                  // Zerar o carrinho
-                  cart.forEach(item => removeFromCart(item.id));
-                  // Exibir modal de pagamento
-                  setShowPaymentModal(true);
-                }}
-                className="w-full bg-blue-600 text-white py-0.5 px-2 rounded-md hover:bg-blue-700 transition-colors"
-              >
-                Finalizar Compra
-              </button>
+                  onClick={() => {
+                    if (cart.length === 0) {
+                      setShowEmptyCartModal(true);
+                      return;
+                    }
+                  
+                    // Exibe o modal de pagamento antes de finalizar
+                    setShowPaymentModal(true);
+                  }}
+                  className="w-full bg-blue-600 text-white py-0.5 px-2 rounded-md hover:bg-blue-700 transition-colors"
+                >
+                  Finalizar Compra
+                </button>
             </div>
           </div>
         </div>

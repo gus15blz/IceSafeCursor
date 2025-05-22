@@ -1,71 +1,52 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://localhost:7223/',
+  baseURL: 'http://localhost:5005',
   timeout: 15000,
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
-  },
-  maxContentLength: 50 * 1024 * 1024,
-  maxBodyLength: 50 * 1024 * 1024,
-  validateStatus: function (status) {
-    return status >= 200 && status < 500;
   }
 });
 
-// Interceptor para logs de requisição
+// Produtos
+export const getProdutos = () => api.get('/api/produto');
+export const getProdutoById = (id) => api.get(`/api/produto/${id}`);
+export const createProduto = (produto) => api.post('/api/produto', produto);
+export const updateProduto = (id, produto) => api.put(`/api/produto/${id}`, produto);
+export const deleteProduto = (id) => api.delete(`/api/produto/${id}`);
+
+// Vendas
+export const registrarVenda = (venda) => api.post('/api/venda', venda);
+export const getVendas = () => api.get('/api/venda');
+export const atualizarEstoque = (produtoId, novoEstoque) => {
+  return api.put(`/api/produto/${produtoId}/estoque`, { estoque: novoEstoque });
+};
+
+// Interceptors para logs
 api.interceptors.request.use(request => {
-  console.log('🚀 Iniciando requisição:', {
+  console.log('🚀 Request:', {
     url: request.url,
     method: request.method,
-    headers: request.headers,
-    data: request.data,
-    baseURL: request.baseURL,
-    fullURL: `${request.baseURL}${request.url}`
+    data: request.data
   });
   return request;
 });
 
-// Interceptor para logs de resposta
 api.interceptors.response.use(
   response => {
-    console.log('✅ Resposta recebida:', {
+    console.log('✅ Response:', {
       status: response.status,
-      data: response.data,
-      headers: response.headers,
-      url: response.config.url,
-      fullURL: `${response.config.baseURL}${response.config.url}`
+      data: response.data
     });
     return response;
   },
   error => {
-    console.error('❌ Erro na requisição:', {
+    console.error('❌ Error:', {
       message: error.message,
-      code: error.code,
-      response: error.response?.data,
       status: error.response?.status,
-      config: {
-        url: error.config?.url,
-        baseURL: error.config?.baseURL,
-        fullURL: error.config ? `${error.config.baseURL}${error.config.url}` : 'URL não disponível',
-        method: error.config?.method,
-        headers: error.config?.headers,
-        data: error.config?.data
-      }
+      data: error.response?.data
     });
-
-    // Tratamento específico para erros comuns
-    if (error.code === 'ECONNABORTED') {
-      console.error('⏰ Timeout: A requisição demorou muito para responder');
-    } else if (!error.response) {
-      console.error('🔌 Erro de conexão: Não foi possível conectar com a API');
-    } else if (error.response.status === 404) {
-      console.error('🔍 Endpoint não encontrado');
-    } else if (error.response.status === 500) {
-      console.error('💥 Erro interno do servidor');
-    }
-
     return Promise.reject(error);
   }
 );

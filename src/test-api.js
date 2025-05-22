@@ -7,7 +7,7 @@ async function testApi() {
     // Teste 1: Verificar se a API está respondendo
     console.log('\n📡 Teste 1: Verificando conexão básica...');
     try {
-      const response = await axios.get('http://localhost:7223', {
+      const response = await axios.get('http://localhost:5005', {
         timeout: 5000
       });
       console.log('✅ API está respondendo:', response.status);
@@ -18,7 +18,7 @@ async function testApi() {
     // Teste 2: Tentar GET com headers específicos
     console.log('\n📡 Teste 2: Tentando GET com headers específicos...');
     try {
-      const response = await axios.get('http://localhost:7223/api/Produto', {
+      const response = await axios.get('http://localhost:5005/api/Produto', {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json'
@@ -40,7 +40,7 @@ async function testApi() {
     console.log('\n📡 Teste 3: Tentando POST...');
     try {
 
-      const response = await axios.post('https://localhost:7223/api/Produto',  {
+      const response = await axios.post('http://localhost:5005/api/Produto',  {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
