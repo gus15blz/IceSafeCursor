@@ -1,66 +1,40 @@
-import axios from 'axios';
+import api from './services/api';
 
-async function testApi() {
+// Teste de conexão com a API
+export const testApiConnection = async () => {
   try {
-    console.log('🔍 Iniciando teste de conexão com a API...');
-    
-    // Teste 1: Verificar se a API está respondendo
-    console.log('\n📡 Teste 1: Verificando conexão básica...');
-    try {
-      const response = await axios.get('http://localhost:7223', {
-        timeout: 5000
-      });
-      console.log('✅ API está respondendo:', response.status);
-    } catch (error) {
-      console.error('❌ Erro na conexão básica:', error.message);
-    }
-
-    // Teste 2: Tentar GET com headers específicos
-    console.log('\n📡 Teste 2: Tentando GET com headers específicos...');
-    try {
-      const response = await axios.get('http://localhost:7223/api/Produto', {
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        },
-        timeout: 5000
-      });
-      console.log('✅ GET /api/Produto - Status:', response.status);
-      console.log('📦 Dados recebidos:', response.data);
-    } catch (error) {
-      console.error('❌ Erro no GET:', {
-        message: error.message,
-        code: error.code,
-        response: error.response?.data,
-        status: error.response?.status
-      });
-    }
-
-    // Teste 3: Tentar POST
-    console.log('\n📡 Teste 3: Tentando POST...');
-    try {
-
-      const response = await axios.post('https://localhost:7223/api/Produto',  {
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        timeout: 5000
-      });
-      console.log('✅ POST /api/Produto - Status:', response.status);
-      console.log('📦 Resposta:', response.data);
-    } catch (error) {
-      console.error('❌ Erro no POST:', {
-        message: error.message,
-        code: error.code,
-        response: error.response?.data,
-        status: error.response?.status
-      });
-    }
-
+    const response = await api.get('/');
+    return response.data;
   } catch (error) {
-    console.error('❌ Erro geral:', error);
+    console.error('Erro ao testar conexão:', error);
+    throw error;
   }
-}
+};
 
-testApi(); 
+// Teste de listagem de produtos
+export const testListProducts = async () => {
+  try {
+    const response = await api.get('/api/Produto');
+    return response.data;
+  } catch (error) {
+    console.error('Erro ao listar produtos:', error);
+    throw error;
+  }
+};
+
+// Teste de criação de produto
+export const testCreateProduct = async () => {
+  try {
+    const testProduct = {
+      nome: "Produto Teste",
+      preco: 10.99,
+      quantidade: 100
+    };
+
+    const response = await api.post('/api/Produto', testProduct);
+    return response.data;
+  } catch (error) {
+    console.error('Erro ao criar produto:', error);
+    throw error;
+  }
+}; 

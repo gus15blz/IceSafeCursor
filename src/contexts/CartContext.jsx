@@ -1,52 +1,95 @@
-import React, { createContext, useState, useContext } from 'react'
+// contexts/CartContext.js
+import React, { createContext, useContext, useState } from 'react';
 
-const CartContext = createContext()
+const CartContext = createContext();
 
 export function CartProvider({ children }) {
-  const [cart, setCart] = useState([])
-  const [isCartOpen, setIsCartOpen] = useState(false)
+  // ===== ESTADOS =====
+  const [cart, setCart] = useState([]);           // Produtos no carrinho
+  const [isCartOpen, setIsCartOpen] = useState(false); // Modal aberto/fechado
+  const [vendas, setVendas] = useState([]);       // Histórico de vendas
 
+  // ===== FUNÇÕES DO CARRINHO =====
+  
+  /**
+   * Adiciona produto ao carrinho
+   * @param {Object} produto - Objeto do produto
+   */
   const addToCart = (produto) => {
-    setCart(prevCart => [...prevCart, produto])
-    setIsCartOpen(true) // Sempre abre o carrinho ao adicionar um produto
-  }
+    setCart(prevCart => [...prevCart, produto]);
+    setIsCartOpen(true); // Abre o carrinho automaticamente
+  };
 
+  /**
+   * Remove produto específico do carrinho
+   * @param {number} produtoId - ID do produto
+   */
   const removeFromCart = (produtoId) => {
-    setCart(prevCart => prevCart.filter(item => item.id !== produtoId))
-  }
+    setCart(prevCart => prevCart.filter(item => item.id !== produtoId));
+  };
 
+  /**
+   * Limpa todo o carrinho
+   */
   const clearCart = () => {
-    setCart([])
-  }
+    setCart([]);
+    setIsCartOpen(false);
+  };
 
+  /**
+   * Calcula o total do carrinho
+   */
   const getTotal = () => {
-    return cart.reduce((total, item) => total + item.preco, 0)
-  }
+    return cart.reduce((total, item) => {
+      return total + (item.preco * (item.quantidadeNoCarrinho || 1));
+    }, 0);
+  };
 
-  const toggleCart = () => {
-    setIsCartOpen(prev => !prev)
-  }
+  // ===== FUNÇÃO PRINCIPAL: REGISTRAR VENDA =====
+  
+  /**
+   * Registra uma nova venda no histórico
+   * Esta é a função que conecta carrinho → vendas
+   * @param {Object} dadosVenda - Dados da venda
+   */
+  const registrarVenda = async (dadosVenda) => {
+    const novaVenda = {
+      id: Date.now(), // ID único baseado em timestamp
+      data: new Date().toLocaleDateString('pt-BR'),
+      hora: new Date().toLocaleTimeString('pt-BR'),
+      ...dadosVenda // Espalha os dados recebidos
+    };
+    
+    // Adiciona a nova venda ao array de vendas
+    setVendas(prevVendas => [...prevVendas, novaVenda]);
+  };
 
+  // ===== PROVIDER =====
   return (
-    <CartContext.Provider value={{ 
-      cart, 
-      addToCart, 
-      removeFromCart, 
-      clearCart, 
-      getTotal,
+    <CartContext.Provider value={{
+      // Estados
+      cart,
       isCartOpen,
-      toggleCart,
-      setIsCartOpen
+      vendas,
+      // Funções
+      setCart,
+      setIsCartOpen,
+      addToCart,
+      removeFromCart,
+      clearCart,
+      getTotal,
+      registrarVenda
     }}>
       {children}
     </CartContext.Provider>
-  )
+  );
 }
 
-export function useCart() {
-  const context = useContext(CartContext)
+// Hook personalizado para usar o contexto
+export const useCart = () => {
+  const context = useContext(CartContext);
   if (!context) {
-    throw new Error('useCart deve ser usado dentro de um CartProvider')
+    throw new Error('useCart deve ser usado dentro de um CartProvider');
   }
-  return context
-} 
+  return context;
+};

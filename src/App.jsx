@@ -1,11 +1,11 @@
 import React from 'react'
 import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom'
 import Home from './pages/Home'
+import Sales from './pages/Sales'
 import ProductForm from './components/ProductForm'
 import { CartProvider, useCart } from './contexts/CartContext'
 import './App.css'
 import Inventory from './pages/Inventory'
-import Sales from './pages/Sales'
 import CartModal from './components/CartModal'
 import PasswordModal from './components/PasswordModal'
 import logo from './images/logo.png'
@@ -123,29 +123,36 @@ function DefaultLayout({ children }) {
 }
 
 // Componente principal
+function MainApp() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={
+          <DefaultLayout>
+            <Home />
+          </DefaultLayout>
+        } />
+        <Route path="/estoque" element={
+          <DefaultLayout>
+            <Inventory />
+          </DefaultLayout>
+        } />
+        <Route path="/vendas" element={
+          <DefaultLayout>
+            <Sales />
+          </DefaultLayout>
+        } />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Router>
+  )
+}
+
+// Componente App que envolve tudo com o CartProvider
 function App() {
   return (
     <CartProvider>
-      <Router>
-        <Routes>
-          <Route path="/" element={
-            <DefaultLayout>
-              <Home />
-            </DefaultLayout>
-          } />
-          <Route path="/estoque" element={
-            <DefaultLayout>
-              <Inventory />
-            </DefaultLayout>
-          } />
-          <Route path="/vendas" element={
-            <DefaultLayout>
-              <Sales />
-            </DefaultLayout>
-          } />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </Router>
+      <MainApp />
     </CartProvider>
   )
 }

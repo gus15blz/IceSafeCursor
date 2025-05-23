@@ -15,7 +15,7 @@ function Sales() {
   const fetchVendas = async () => {
     try {
       setLoading(true)
-      const response = await api.get('https://localhost:7223/api/produto')
+      const response = await api.get('/api/produto')
       const vendasData = response.data
 
       setVendas(vendasData)

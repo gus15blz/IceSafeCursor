@@ -1,48 +1,79 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import React, { useState } from 'react';
+import { useCart } from '../contexts/CartContext';
+import { finalizarVenda } from '../../services/api';
 
 function Sales() {
-  const [salesData, setSalesData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  // Pega as vendas do contexto
+  const { vendas } = useCart();
 
-  useEffect(() => {
-    // Função para buscar dados da API
-    const fetchSalesData = async () => {
-      try {
-        const response = await axios.get('https://localhost:7223'); // Substitua pela URL da sua API
-        setSalesData(response.data);
-      } catch (err) {
-        setError('Erro ao carregar os dados de vendas.');
-      } finally {
-        setLoading(false);
-      }
-    };
+  /**
+   * Calcula o total de uma venda
+   * @param {Array} itens - Array de itens da venda
+   * @returns {number} - Total da venda
+   */
+  const calcularTotal = (itens) => {
+    return itens.reduce((total, item) => 
+      total + (item.preco * item.quantidade), 0
+    );
+  };
 
-    fetchSalesData();
-  }, []);
-
-  if (loading) {
-    return <p>Carregando dados de vendas...</p>;
-  }
-
-  if (error) {
-    return <p>{error}</p>;
-  }
+  /**
+   * Formata valor para moeda brasileira
+   * @param {number} valor - Valor numérico
+   * @returns {string} - Valor formatado
+   */
+  const formatarMoeda = (valor) => {
+    return valor.toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    });
+  };
 
   return (
-    <div className="sales-page">
-      <h2 className="text-2xl font-bold">Página de Vendas</h2>
-      <p>Bem-vindo à página de vendas. Aqui você pode gerenciar suas vendas.</p>
-      <ul>
-        {salesData.map((sale) => (
-          <li key={sale.id}>
-            <p>Produto: {sale.productName}</p>
-            <p>Quantidade: {sale.quantity}</p>
-            <p>Preço: R$ {sale.price}</p>
-          </li>
-        ))}
-      </ul>
+    <div className="sales-page p-6">
+      <h2 className="text-2xl font-bold mb-4">Histórico de Vendas</h2>
+      
+      {vendas.length === 0 ? (
+        <div className="text-center py-8">
+          <p className="text-gray-500">Nenhuma venda registrada ainda.</p>
+          <p className="text-sm text-gray-400">
+            As vendas aparecerão aqui após finalizar compras no carrinho.
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {vendas.map((venda) => (
+            <div key={venda.id} className="border rounded-lg p-4 bg-white shadow">
+              {/* Cabeçalho da Venda */}
+              <div className="flex justify-between items-center mb-3">
+                <h3 className="text-lg font-semibold">Venda #{venda.id}</h3>
+                <span className="text-sm text-gray-500">
+                  {venda.data} às {venda.hora}
+                </span>
+              </div>
+              
+              {/* Itens da Venda */}
+              <div className="mb-3">
+                <h4 className="font-medium mb-2">Itens vendidos:</h4>
+                {venda.itens.map((item, index) => (
+                  <div key={index} className="flex justify-between text-sm py-1">
+                    <span>{item.nome} (x{item.quantidade})</span>
+                    <span>{formatarMoeda(item.preco * item.quantidade)}</span>
+                  </div>
+                ))}
+              </div>
+              
+              {/* Total da Venda */}
+              <div className="border-t pt-2">
+                <div className="flex justify-between font-bold">
+                  <span>Total da Venda:</span>
+                  <span>{formatarMoeda(venda.total)}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

@@ -1,71 +1,45 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://localhost:7223/',
+  baseURL: 'http://localhost:5005',
   timeout: 15000,
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
-  },
-  maxContentLength: 50 * 1024 * 1024,
-  maxBodyLength: 50 * 1024 * 1024,
-  validateStatus: function (status) {
-    return status >= 200 && status < 500;
   }
 });
 
-// Interceptor para logs de requisição
+// Produtos
+export const getProdutos = () => api.get('/api/produto');
+export const getProdutoById = (id) => api.get(`/api/produto/${id}`);
+export const createProduto = (produto) => api.post('/api/produto', produto);
+export const updateProduto = (id, produto) => api.put(`/api/produto/${id}`, produto);
+export const deleteProduto = (id) => api.delete(`/api/produto/${id}`);
+
+// Função para buscar vendas
+export const getVendas = () => api.get('/api/Vendas/Vendas');
+
+// Função para buscar relatório
+export const getRelatorioVendas = () => api.get('/api/Vendas/relatorio');
+
+// Interceptors para logs detalhados
 api.interceptors.request.use(request => {
-  console.log('🚀 Iniciando requisição:', {
-    url: request.url,
-    method: request.method,
-    headers: request.headers,
-    data: request.data,
-    baseURL: request.baseURL,
-    fullURL: `${request.baseURL}${request.url}`
-  });
+  const { method, url, data } = request;
+  console.log(`>>> ${method?.toUpperCase()} ${url}`, data ? JSON.stringify(data, null, 2) : '');
   return request;
 });
 
-// Interceptor para logs de resposta
 api.interceptors.response.use(
   response => {
-    console.log('✅ Resposta recebida:', {
-      status: response.status,
-      data: response.data,
-      headers: response.headers,
-      url: response.config.url,
-      fullURL: `${response.config.baseURL}${response.config.url}`
-    });
+    const { status, config: { url, method }, data } = response;
+    console.log(`<<< ${status} ${method?.toUpperCase()} ${url}`, JSON.stringify(data, null, 2));
     return response;
   },
   error => {
-    console.error('❌ Erro na requisição:', {
-      message: error.message,
-      code: error.code,
-      response: error.response?.data,
-      status: error.response?.status,
-      config: {
-        url: error.config?.url,
-        baseURL: error.config?.baseURL,
-        fullURL: error.config ? `${error.config.baseURL}${error.config.url}` : 'URL não disponível',
-        method: error.config?.method,
-        headers: error.config?.headers,
-        data: error.config?.data
-      }
-    });
-
-    // Tratamento específico para erros comuns
-    if (error.code === 'ECONNABORTED') {
-      console.error('⏰ Timeout: A requisição demorou muito para responder');
-    } else if (!error.response) {
-      console.error('🔌 Erro de conexão: Não foi possível conectar com a API');
-    } else if (error.response.status === 404) {
-      console.error('🔍 Endpoint não encontrado');
-    } else if (error.response.status === 500) {
-      console.error('💥 Erro interno do servidor');
+    if (error.response) {
+      const { status, config: { url, method }, data } = error.response;
+      console.error(`!!! ${status} ${method?.toUpperCase()} ${url}`, JSON.stringify(data, null, 2));
     }
-
     return Promise.reject(error);
   }
 );
