@@ -21,7 +21,7 @@ function Home() {
       // Mapeia os produtos para garantir que todos tenham o campo estoque
       const produtosComEstoque = response.data.map(produto => ({
         ...produto,
-        estoque: produto.estoque || produto.quantidade || 0 // Usa estoque ou quantidade, ou 0 se nenhum existir
+        estoque: produto.quantidade // Padronizando para usar apenas o campo quantidade
       }))
       setProdutos(produtosComEstoque)
       setError('')
@@ -33,9 +33,24 @@ function Home() {
     }
   }
 
+  // Adiciona um listener para o evento customizado
+  useEffect(() => {
+    const handleProdutosUpdate = () => {
+      fetchProdutos();
+    };
+
+    // Adiciona o listener ao montar
+    window.addEventListener('produtosUpdated', handleProdutosUpdate);
+
+    // Remove o listener ao desmontar
+    return () => {
+      window.removeEventListener('produtosUpdated', handleProdutosUpdate);
+    };
+  }, []);
+
   const getEstoqueDisponivel = (produto) => {
-    // Verifica se existe estoque ou quantidade e retorna o valor apropriado
-    return produto.estoque ?? produto.quantidade ?? 0
+    // Padronizando para usar apenas o campo quantidade
+    return produto.quantidade || 0
   }
 
   const handleAddToCart = (produto) => {

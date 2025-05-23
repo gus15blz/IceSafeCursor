@@ -16,37 +16,30 @@ export const createProduto = (produto) => api.post('/api/produto', produto);
 export const updateProduto = (id, produto) => api.put(`/api/produto/${id}`, produto);
 export const deleteProduto = (id) => api.delete(`/api/produto/${id}`);
 
-// Vendas
-export const registrarVenda = (venda) => api.post('/api/venda', venda);
-export const getVendas = () => api.get('/api/venda');
-export const atualizarEstoque = (produtoId, novoEstoque) => {
-  return api.put(`/api/produto/${produtoId}/estoque`, { estoque: novoEstoque });
-};
+// Função para buscar vendas
+export const getVendas = () => api.get('/api/Vendas/Vendas');
 
-// Interceptors para logs
+// Função para buscar relatório
+export const getRelatorioVendas = () => api.get('/api/Vendas/relatorio');
+
+// Interceptors para logs detalhados
 api.interceptors.request.use(request => {
-  console.log('🚀 Request:', {
-    url: request.url,
-    method: request.method,
-    data: request.data
-  });
+  const { method, url, data } = request;
+  console.log(`>>> ${method?.toUpperCase()} ${url}`, data ? JSON.stringify(data, null, 2) : '');
   return request;
 });
 
 api.interceptors.response.use(
   response => {
-    console.log('✅ Response:', {
-      status: response.status,
-      data: response.data
-    });
+    const { status, config: { url, method }, data } = response;
+    console.log(`<<< ${status} ${method?.toUpperCase()} ${url}`, JSON.stringify(data, null, 2));
     return response;
   },
   error => {
-    console.error('❌ Error:', {
-      message: error.message,
-      status: error.response?.status,
-      data: error.response?.data
-    });
+    if (error.response) {
+      const { status, config: { url, method }, data } = error.response;
+      console.error(`!!! ${status} ${method?.toUpperCase()} ${url}`, JSON.stringify(data, null, 2));
+    }
     return Promise.reject(error);
   }
 );
