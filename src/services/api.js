@@ -9,6 +9,16 @@ const api = axios.create({
   }
 });
 
+const handleFinalizar = async () => {
+  try {
+    await finalizarCompra(carrinho);
+    alert("Compra finalizada com sucesso!");
+    // Atualizar estoque, limpar carrinho, etc.
+  } catch (error) {
+    alert("Erro ao finalizar compra.");
+  }
+};
+
 // Produtos
 export const getProdutos = () => api.get('/api/produto');
 export const getProdutoById = (id) => api.get(`/api/produto/${id}`);
@@ -43,5 +53,23 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+// Cadastrar venda
+export const finalizarCompra = async (carrinho) => {
+  try {
+    const response = await fetch("/api/venda", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(carrinho),
+    });
+    if (!response.ok) throw new Error("Erro ao finalizar compra");
+    return await response.json();
+  } catch (error) {
+    console.error("Erro em finalizarCompra:", error);
+    throw error;
+  }
+};
 
 export default api; 

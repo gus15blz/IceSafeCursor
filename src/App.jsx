@@ -16,15 +16,25 @@ function Navigation() {
   const navigate = useNavigate()
   const location = useLocation()
   const { isCartOpen, setIsCartOpen } = useCart()
-  const [isPasswordModalOpen, setIsPasswordModalOpen] = React.useState(false)
+  const [isInventoryPasswordModalOpen, setIsInventoryPasswordModalOpen] = React.useState(false)
+  const [isSalesPasswordModalOpen, setIsSalesPasswordModalOpen] = React.useState(false)
 
   const handleInventoryAccess = () => {
-    setIsPasswordModalOpen(true)
+    setIsInventoryPasswordModalOpen(true)
   }
 
-  const handlePasswordSuccess = () => {
+  const handleSalesAccess = () => {
+    setIsSalesPasswordModalOpen(true)
+  }
+
+  const handleInventoryPasswordSuccess = () => {
     navigate('/estoque')
-    setIsPasswordModalOpen(false)
+    setIsInventoryPasswordModalOpen(false)
+  }
+
+  const handleSalesPasswordSuccess = () => {
+    navigate('/vendas')
+    setIsSalesPasswordModalOpen(false)
   }
 
   return (
@@ -63,7 +73,7 @@ function Navigation() {
                 Estoque
               </button>
               <button 
-                onClick={() => navigate('/vendas')}
+                onClick={handleSalesAccess}
                 className={`nav-button rounded-lg transition-colors ${
                   location.pathname === '/vendas' 
                     ? 'bg-blue-500 text-white' 
@@ -93,11 +103,18 @@ function Navigation() {
         onClose={() => setIsCartOpen(false)} 
       />
 
-      {/* Modal de Senha */}
+      {/* Modal de Senha para Estoque */}
       <PasswordModal
-        isOpen={isPasswordModalOpen}
-        onClose={() => setIsPasswordModalOpen(false)}
-        onSuccess={handlePasswordSuccess}
+        isOpen={isInventoryPasswordModalOpen}
+        onClose={() => setIsInventoryPasswordModalOpen(false)}
+        onSuccess={handleInventoryPasswordSuccess}
+      />
+
+      {/* Modal de Senha para Vendas */}
+      <PasswordModal
+        isOpen={isSalesPasswordModalOpen}
+        onClose={() => setIsSalesPasswordModalOpen(false)}
+        onSuccess={handleSalesPasswordSuccess}
       />
     </>
   )

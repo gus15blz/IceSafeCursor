@@ -16,7 +16,20 @@ export function CartProvider({ children }) {
    * @param {Object} produto - Objeto do produto
    */
   const addToCart = (produto) => {
-    setCart(prevCart => [...prevCart, produto]);
+    // Verifica se o produto já existe no carrinho
+    const existingItem = cart.find(item => item.id === produto.id);
+    
+    if (existingItem) {
+      // Se existe, atualiza a quantidade
+      setCart(prevCart => prevCart.map(item =>
+        item.id === produto.id
+          ? { ...item, quantidadeNoCarrinho: (item.quantidadeNoCarrinho || 1) + 1 }
+          : item
+      ));
+    } else {
+      // Se não existe, adiciona com quantidade 1
+      setCart(prevCart => [...prevCart, { ...produto, quantidadeNoCarrinho: 1 }]);
+    }
     setIsCartOpen(true); // Abre o carrinho automaticamente
   };
 
@@ -50,14 +63,19 @@ export function CartProvider({ children }) {
   /**
    * Registra uma nova venda no histórico
    * Esta é a função que conecta carrinho → vendas
-   * @param {Object} dadosVenda - Dados da venda
    */
-  const registrarVenda = async (dadosVenda) => {
+  const registrarVenda = () => {
     const novaVenda = {
       id: Date.now(), // ID único baseado em timestamp
       data: new Date().toLocaleDateString('pt-BR'),
       hora: new Date().toLocaleTimeString('pt-BR'),
-      ...dadosVenda // Espalha os dados recebidos
+      itens: cart.map(item => ({
+        id: item.id,
+        nome: item.nome,
+        quantidade: item.quantidadeNoCarrinho || 1,
+        preco: item.preco
+      })),
+      total: getTotal()
     };
     
     // Adiciona a nova venda ao array de vendas

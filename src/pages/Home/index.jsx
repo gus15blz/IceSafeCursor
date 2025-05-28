@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react'
 import gelaImage from '../../images/gela.jpg'
 import { useCart } from '../../contexts/CartContext'
 import { getProdutos } from '../../services/api'
+import { finalizarCompra } from '../../services/api';
+
 
 function Home() {
   const [produtos, setProdutos] = useState([])
@@ -9,6 +11,16 @@ function Home() {
   const [error, setError] = useState('')
   const [message, setMessage] = useState({ type: '', text: '' })
   const { addToCart, setIsCartOpen } = useCart()
+
+  useEffect(() => {
+    // Define o zoom para 75% quando o componente monta
+    document.body.style.zoom = '75%';
+
+    // Retorna o zoom para 100% quando o componente desmonta
+    return () => {
+      document.body.style.zoom = '100%';
+    };
+  }, []);
 
   useEffect(() => {
     fetchProdutos()
@@ -32,6 +44,20 @@ function Home() {
       setLoading(false)
     }
   }
+
+  const handleFinalizarCompra = async () => {
+    try {
+      await finalizarCompra(cartItems); // cartItems: lista com produtoId e quantidade
+      setCart([]); // limpa o carrinho após sucesso
+      alert('Compra finalizada com sucesso!');
+      
+      // dispara evento para atualizar os produtos na Home
+      window.dispatchEvent(new Event('produtosUpdated'));
+    } catch (error) {
+      console.error('Erro ao finalizar compra:', error);
+      alert('Erro ao finalizar compra.');
+    }
+  };
 
   // Adiciona um listener para o evento customizado
   useEffect(() => {
@@ -161,6 +187,7 @@ function Home() {
                       </svg>
                       {estoqueDisponivel > 0 ? 'Adicionar ao Carrinho' : 'Fora de Estoque'}
                     </button>
+                    <button onClick={handleFinalizarCompra}>Finalizar Compra</button>
                   </div>
                 </div>
               )

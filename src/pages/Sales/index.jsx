@@ -1,137 +1,126 @@
-import  { useState, useEffect } from 'react'
-import api from '../../services/api'
+import React, { useEffect } from 'react';
+import { useCart } from '../../contexts/CartContext';
 
 function Sales() {
-  const [vendas, setVendas] = useState([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [resumo, setResumo] = useState({ semanal: 0, mensal: 0 })
-  const [produtos, setProdutos] = useState([])
+  const { vendas } = useCart();
 
   useEffect(() => {
-    fetchVendas()
-  }, [])
+    // Define o zoom para 80% quando o componente monta
+    document.body.style.zoom = '80%';
 
-  const fetchVendas = async () => {
-    try {
-      setLoading(true)
-      const response = await api.get('/api/produto')
-      const vendasData = response.data
+    // Retorna o zoom para 100% quando o componente desmonta
+    return () => {
+      document.body.style.zoom = '100%';
+    };
+  }, []);
 
-      setVendas(vendasData)
-      calcularResumo(vendasData)
-      calcularProdutos(vendasData)
-    } catch (error) {
-      console.error('Erro ao buscar vendas:', error)
-      setError('Erro ao carregar vendas. Verifique se a API está rodando.')
-    } finally {
-      setLoading(false)
-    }
-  }
+  const formatarMoeda = (valor) => {
+    return valor.toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    });
+  };
 
-  const calcularResumo = (vendasData) => {
-    const agora = new Date()
-    const vendasSemanais = vendasData.filter((venda) => {
-      const dataVenda = new Date(venda.data)
-      const diferencaDias = (agora - dataVenda) / (1000 * 60 * 60 * 24)
-      return diferencaDias <= 7
-    })
+  const calcularVendasMensais = () => {
+    const hoje = new Date();
+    const primeiroDiaMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+    
+    const vendasMes = vendas.filter(venda => {
+      const dataVenda = new Date(venda.data.split('/').reverse().join('-'));
+      return dataVenda >= primeiroDiaMes;
+    });
 
-    const vendasMensais = vendasData.filter((venda) => {
-      const dataVenda = new Date(venda.data)
-      const diferencaDias = (agora - dataVenda) / (1000 * 60 * 60 * 24)
-      return diferencaDias <= 30
-    })
+    const totalMes = vendasMes.reduce((total, venda) => total + venda.total, 0);
+    
+    return {
+      quantidade: vendasMes.length,
+      total: totalMes
+    };
+  };
 
-    setResumo({
-      semanal: vendasSemanais.length,
-      mensal: vendasMensais.length,
-    })
-  }
-
-  const calcularProdutos = (vendasData) => {
-    const produtosMap = {}
-
-    vendasData.forEach((venda) => {
-      venda.itens.forEach((item) => {
-        if (!produtosMap[item.produtoId]) {
-          produtosMap[item.produtoId] = {
-            nome: item.produtoNome,
-            quantidade: 0,
-            total: 0,
-          }
-        }
-
-        produtosMap[item.produtoId].quantidade += item.quantidade
-        produtosMap[item.produtoId].total += item.quantidade * item.preco
-      })
-    })
-
-    setProdutos(Object.values(produtosMap))
-  }
-
-  const calcularTotalGeral = () => {
-    return produtos.reduce((total, produto) => total + produto.total, 0)
-  }
+  const resumoMensal = calcularVendasMensais();
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 py-8">
-      <div className="bg-white rounded-lg shadow-lg p-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-8">Controle de Vendas</h1>
-
-        {error && (
-          <div className="bg-red-100 text-red-700 p-4 rounded-lg mb-4">
-            {error}
+    <div className="container mx-auto px-4 py-8">
+      <div className="bg-white rounded-lg shadow-lg p-6">
+        <h1 className="text-2xl font-bold text-gray-800 mb-6">Histórico de Vendas</h1>
+        
+        {vendas.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-gray-500">Nenhuma venda registrada ainda.</p>
+            <p className="text-sm text-gray-400">
+              As vendas aparecerão aqui após finalizar compras no carrinho.
+            </p>
           </div>
-        )}
-
-        {loading ? (
-          <p className="text-center text-gray-600">Carregando vendas...</p>
         ) : (
           <>
-            <div className="mb-8">
-              <h2 className="text-xl font-bold text-gray-800">Resumo</h2>
-              <p className="text-gray-600">Vendas na última semana: {resumo.semanal}</p>
-              <p className="text-gray-600">Vendas nos últimos 30 dias: {resumo.mensal}</p>
+            <div className="space-y-6 mb-8">
+              {vendas.map((venda) => (
+                <div key={venda.id} className="border rounded-lg p-4 bg-white shadow">
+                  {/* Cabeçalho da Venda */}
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg font-semibold text-gray-800">
+                      Venda #{venda.id}
+                    </h3>
+                    <div className="text-sm text-gray-500">
+                      <span className="mr-2">{venda.data}</span>
+                      <span>{venda.hora}</span>
+                    </div>
+                  </div>
+
+                  {/* Lista de Itens */}
+                  <div className="mb-4">
+                    <h4 className="font-medium text-gray-700 mb-2">Itens:</h4>
+                    <div className="space-y-2">
+                      {venda.itens.map((item, index) => (
+                        <div key={index} className="flex justify-between text-sm">
+                          <div>
+                            <span className="text-gray-800">{item.nome}</span>
+                            <span className="text-gray-500 ml-2">
+                              (x{item.quantidade})
+                            </span>
+                          </div>
+                          <span className="text-gray-800">
+                            {formatarMoeda(item.preco * item.quantidade)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Total */}
+                  <div className="border-t pt-3">
+                    <div className="flex justify-between font-semibold">
+                      <span className="text-gray-800">Total da Venda:</span>
+                      <span className="text-gray-800">{formatarMoeda(venda.total)}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
 
-            <div className="mb-8">
-              <h2 className="text-xl font-bold text-gray-800">Produtos Vendidos</h2>
-              <table className="w-full border-collapse border border-gray-300">
-                <thead>
-                  <tr>
-                    <th className="border border-gray-300 px-4 py-2">Produto</th>
-                    <th className="border border-gray-300 px-4 py-2">Quantidade</th>
-                    <th className="border border-gray-300 px-4 py-2">Total Arrecadado</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {produtos.map((produto) => (
-                    <tr key={produto.nome}>
-                      <td className="border border-gray-300 px-4 py-2">{produto.nome}</td>
-                      <td className="border border-gray-300 px-4 py-2">{produto.quantidade}</td>
-                      <td className="border border-gray-300 px-4 py-2">R$ {produto.total.toFixed(2)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-                <tfoot>
-                  <tr>
-                    <td colSpan="2" className="border border-gray-300 px-4 py-2 font-bold">
-                      Total Geral
-                    </td>
-                    <td className="border border-gray-300 px-4 py-2 font-bold">
-                      R$ {calcularTotalGeral().toFixed(2)}
-                    </td>
-                  </tr>
-                </tfoot>
-              </table>
+            {/* Resumo Mensal */}
+            <div className="border-t-2 pt-6">
+              <h2 className="text-xl font-bold text-gray-800 mb-4">Resumo do Mês Atual</h2>
+              <div className="bg-blue-50 rounded-lg p-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="text-center p-4 bg-white rounded-lg shadow">
+                    <p className="text-sm text-gray-600 mb-1">Quantidade de Vendas</p>
+                    <p className="text-2xl font-bold text-blue-600">{resumoMensal.quantidade}</p>
+                  </div>
+                  <div className="text-center p-4 bg-white rounded-lg shadow">
+                    <p className="text-sm text-gray-600 mb-1">Total em Vendas</p>
+                    <p className="text-2xl font-bold text-green-600">{formatarMoeda(resumoMensal.total)}</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </>
         )}
       </div>
     </div>
-  )
+  );
 }
 
-export default Sales 
+export default Sales; 
 

@@ -5,7 +5,7 @@ import qrCodeImage from '../../images/qrcode..jpg'
 import thankYouImage from '../../images/image.png'
 
 function CartModal({ isOpen, onClose }) {
-  const { cart, removeFromCart, clearCart, getTotal } = useCart()
+  const { cart, removeFromCart, clearCart, getTotal, registrarVenda } = useCart()
   const [showPaymentModal, setShowPaymentModal] = useState(false)
   const [showThankYouModal, setShowThankYouModal] = useState(false)
   const [showEmptyCartModal, setShowEmptyCartModal] = useState(false)
@@ -49,6 +49,9 @@ function CartModal({ isOpen, onClose }) {
           quantidade: novaQuantidade
         });
       }
+
+      // Registra a venda no histórico
+      registrarVenda();
 
       // Atualiza os dados dos produtos
       await getProdutos();
