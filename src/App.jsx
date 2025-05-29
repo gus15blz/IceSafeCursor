@@ -130,7 +130,7 @@ function DefaultLayout({ children }) {
           {children}
         </div>
       </main>
-      <footer className="footer bg-gray-800 text-white w-full">
+      <footer className="footer bg-white border-t text-gray-600 w-full">
         <div className="content-container">
           <p className="text-center">&copy; 2024 Ice Safe. Todos os direitos reservados.</p>
         </div>

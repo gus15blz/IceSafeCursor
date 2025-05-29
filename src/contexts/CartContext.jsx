@@ -1,5 +1,6 @@
 // contexts/CartContext.js
 import React, { createContext, useContext, useState } from 'react';
+import api from '../services/api';
 
 const CartContext = createContext();
 
@@ -7,7 +8,7 @@ export function CartProvider({ children }) {
   // ===== ESTADOS =====
   const [cart, setCart] = useState([]);           // Produtos no carrinho
   const [isCartOpen, setIsCartOpen] = useState(false); // Modal aberto/fechado
-  const [vendas, setVendas] = useState([]);       // Histórico de vendas
+  const [vendas, setVendas] = useState([]);       // Histórico de vendas local
 
   // ===== FUNÇÕES DO CARRINHO =====
   
@@ -61,25 +62,35 @@ export function CartProvider({ children }) {
   // ===== FUNÇÃO PRINCIPAL: REGISTRAR VENDA =====
   
   /**
-   * Registra uma nova venda no histórico
+   * Registra uma nova venda no histórico e no banco de dados
    * Esta é a função que conecta carrinho → vendas
    */
-  const registrarVenda = () => {
-    const novaVenda = {
-      id: Date.now(), // ID único baseado em timestamp
-      data: new Date().toLocaleDateString('pt-BR'),
-      hora: new Date().toLocaleTimeString('pt-BR'),
-      itens: cart.map(item => ({
-        id: item.id,
-        nome: item.nome,
-        quantidade: item.quantidadeNoCarrinho || 1,
-        preco: item.preco
-      })),
-      total: getTotal()
-    };
-    
-    // Adiciona a nova venda ao array de vendas
-    setVendas(prevVendas => [...prevVendas, novaVenda]);
+  const registrarVenda = async () => {
+    try {
+      const novaVenda = {
+        data: new Date().toLocaleDateString('pt-BR'),
+        hora: new Date().toLocaleTimeString('pt-BR'),
+        itens: cart.map(item => ({
+          produtoId: item.id,
+          nome: item.nome,
+          quantidade: item.quantidadeNoCarrinho || 1,
+          precoUnitario: item.preco,
+          total: item.preco * (item.quantidadeNoCarrinho || 1)
+        })),
+        total: getTotal()
+      };
+      
+      // Salva a venda no banco de dados
+      const response = await api.post('/api/HistoricoVendas', novaVenda);
+      
+      // Adiciona a venda com o ID retornado ao estado local
+      setVendas(prevVendas => [...prevVendas, { ...novaVenda, id: response.data.id }]);
+      
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao registrar venda:', error);
+      throw error;
+    }
   };
 
   // ===== PROVIDER =====

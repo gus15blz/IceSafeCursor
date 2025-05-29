@@ -106,15 +106,15 @@ function Home() {
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Seção Inicial */}
-      <section className="rounded-lg shadow-md p-6 mb-8 bg-[#3192ca]">
+      <section className="rounded-lg shadow-md p-6 mb-8 bg-white border border-blue-200">
         <div className="flex items-center justify-between gap-6">
           <div className="flex-1">
-            <h1 className="text-white text-3xl font-bold leading-tight">
+            <h1 className="text-blue-600 text-3xl font-bold leading-tight">
               SNACKS RÁPIDOS PARA
               <br />
               SEU TRABALHO
             </h1>
-            <p className="text-white/90 mt-2">
+            <p className="text-gray-600 mt-2">
               Encontre as melhores opções de lanches para seu dia a dia
             </p>
           </div>
@@ -187,7 +187,6 @@ function Home() {
                       </svg>
                       {estoqueDisponivel > 0 ? 'Adicionar ao Carrinho' : 'Fora de Estoque'}
                     </button>
-                    <button onClick={handleFinalizarCompra}>Finalizar Compra</button>
                   </div>
                 </div>
               )

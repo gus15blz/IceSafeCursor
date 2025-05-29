@@ -83,7 +83,7 @@ function CartModal({ isOpen, onClose }) {
     <div className="fixed inset-0 z-50 overflow-hidden">
       {/* Overlay */}
       <div 
-        className="absolute inset-0 bg-black bg-opacity-50 transition-opacity"
+        className="absolute inset-0 bg-gray-200 bg-opacity-75 transition-opacity"
         onClick={onClose}
       />
 
@@ -176,7 +176,7 @@ function CartModal({ isOpen, onClose }) {
       {/* Modal de Pagamento */}
       {showPaymentModal && (
         <div className="fixed inset-0 z-50 overflow-hidden">
-          <div className="absolute inset-0 bg-black bg-opacity-50 transition-opacity" onClick={() => !loading && setShowPaymentModal(false)} />
+          <div className="absolute inset-0 bg-gray-200 bg-opacity-75 transition-opacity" onClick={() => !loading && setShowPaymentModal(false)} />
           <div className="fixed inset-0 flex items-center justify-center">
             <div className="bg-white p-3 rounded-lg shadow-xl max-w-xs w-full">
               <h2 className="text-sm font-medium text-gray-900 mb-2">Realize o pagamento</h2>
@@ -196,7 +196,7 @@ function CartModal({ isOpen, onClose }) {
       {/* Modal de Agradecimento */}
       {showThankYouModal && (
         <div className="fixed inset-0 z-50 overflow-hidden">
-          <div className="absolute inset-0 bg-black bg-opacity-50 transition-opacity" />
+          <div className="absolute inset-0 bg-gray-200 bg-opacity-75 transition-opacity" />
           <div className="fixed inset-0 flex items-center justify-center">
             <div className="bg-white p-3 rounded-lg shadow-xl max-w-xs w-full text-center">
               <h2 className="text-lg font-medium text-gray-900 mb-2">Compra realizada com sucesso!</h2>
@@ -210,7 +210,7 @@ function CartModal({ isOpen, onClose }) {
       {/* Modal de Carrinho Vazio */}
       {showEmptyCartModal && (
         <div className="fixed inset-0 z-50 overflow-hidden">
-          <div className="absolute inset-0 bg-black bg-opacity-50 transition-opacity" onClick={() => setShowEmptyCartModal(false)} />
+          <div className="absolute inset-0 bg-gray-200 bg-opacity-75 transition-opacity" onClick={() => setShowEmptyCartModal(false)} />
           <div className="fixed inset-0 flex items-center justify-center">
             <div className="bg-white p-3 rounded-lg shadow-xl max-w-xs w-full text-center">
               <h2 className="text-sm font-medium text-gray-900 mb-2">Carrinho Vazio</h2>
