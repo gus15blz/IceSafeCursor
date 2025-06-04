@@ -1,293 +1,252 @@
-import React, { useEffect, useState } from 'react';
-import { getVendas, getVendasPorPeriodo, getResumoVendas } from '../../services/api';
+/* eslint-disable no-undef */
+/* eslint-disable no-unused-vars */
+import  { useState, useEffect } from 'react'
+import api from '../../services/api'
 
 function Sales() {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [vendas, setVendas] = useState([]);
-  const [resumo, setResumo] = useState(null);
-  const [filtroData, setFiltroData] = useState({
-    dataInicio: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
-    dataFim: new Date()
-  });
+  const [, setVendas] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [resumo, setResumo] = useState({ semanal: 0, mensal: 0 })
+  const [produtos, setProdutos] = useState([])
+  const [vendas, setVendasState] = useState([])
+  const [dataInicio, setDataInicio] = useState('')
+  const [dataFim, setDataFim] = useState('')
+  const [vendasFiltradas, setVendasFiltradas] = useState([])
+  const [showProdutosModal, setShowProdutosModal] = useState(false)
 
   useEffect(() => {
-    document.body.style.zoom = '80%';
-    fetchDados();
+    document.body.style.zoom = '60%';
+    fetchVendas()
     return () => {
       document.body.style.zoom = '100%';
     };
-  }, []);
+  }, [])
 
-  const fetchDados = async () => {
+  const fetchVendas = async () => {
     try {
-      setLoading(true);
-      setError(null);
-
-      // Primeiro tenta buscar todas as vendas
-      const vendasResponse = await getVendas();
-      console.log('Resposta inicial de vendas:', vendasResponse);
-
-      if (vendasResponse.data) {
-        setVendas(Array.isArray(vendasResponse.data) ? vendasResponse.data : []);
-        
-        // Se conseguiu as vendas, tenta buscar o resumo
-        try {
-          const resumoResponse = await getResumoVendas();
-          setResumo(resumoResponse.data);
-        } catch (resumoError) {
-          console.error('Erro ao buscar resumo:', resumoError);
-          // Não mostra erro para o usuário se apenas o resumo falhar
-        }
-      } else {
-        throw new Error('Dados de vendas não recebidos');
-      }
-
-    } catch (err) {
-      console.error('Erro ao buscar dados:', err);
-      setError('Não foi possível carregar os dados. Por favor, tente novamente.');
-      
-      // Se a rota principal falhar, tenta a rota por período
-      try {
-        console.log('Tentando buscar por período após falha na rota principal');
-        const vendasPeriodoResponse = await getVendasPorPeriodo(
-          filtroData.dataInicio,
-          filtroData.dataFim
-        );
-        
-        if (vendasPeriodoResponse.data) {
-          setVendas(Array.isArray(vendasPeriodoResponse.data) ? vendasPeriodoResponse.data : []);
-          setError(null); // Limpa o erro se conseguiu recuperar
-        }
-      } catch (periodoError) {
-        console.error('Erro também na busca por período:', periodoError);
-      }
+      setLoading(true)
+      const response = await api.get('/api/Venda')
+      console.log('Payload de vendas:', response.data)
+      const vendasData = Array.isArray(response.data) ? response.data : (response.data.vendas || response.data.data || [])
+      setVendas(vendasData)
+      setVendasState(vendasData)
+      setVendasFiltradas(vendasData)
+      calcularResumo(vendasData)
+      calcularProdutos(vendasData)
+    } catch (error) {
+      console.error('Erro ao buscar vendas:', error)
+      setError('Erro ao carregar vendas. Verifique se a API está rodando.')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
-  const handleFiltroChange = (e) => {
-    const { name, value } = e.target;
-    setFiltroData(prev => ({
-      ...prev,
-      [name]: new Date(value)
+  const filtrarPorData = () => {
+    if (!dataInicio && !dataFim) {
+      setVendasFiltradas(vendas)
+      calcularResumo(vendas)
+      calcularProdutos(vendas)
+      return
+    }
+    const inicio = dataInicio ? new Date(dataInicio) : null
+    const fim = dataFim ? new Date(dataFim) : null
+    const filtradas = vendas.filter(venda => {
+      const dataVenda = new Date(venda.dataVenda || venda.data)
+      if (inicio && dataVenda < inicio) return false
+      if (fim && dataVenda > fim) return false
+      return true
+    })
+    setVendasFiltradas(filtradas)
+    calcularResumo(filtradas)
+    calcularProdutos(filtradas)
+  }
+
+  const finalizarCompra = async () => {
+  try {
+    const itensVenda = carrinho.map((item) => ({
+      produtoId: item.id,
+      quantidade: item.quantidade,
+      preco: item.preco,
+      produtoNome: item.nome,
     }));
-  };
 
-  const handleFiltrar = async (e) => {
-    e.preventDefault();
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const response = await getVendasPorPeriodo(filtroData.dataInicio, filtroData.dataFim);
-      console.log('Resposta do filtro:', response);
-      
-      if (response.data) {
-        setVendas(Array.isArray(response.data) ? response.data : []);
-      } else {
-        throw new Error('Dados não recebidos ao filtrar');
-      }
-    } catch (err) {
-      console.error('Erro ao filtrar vendas:', err);
-      setError('Não foi possível filtrar as vendas. Por favor, tente novamente.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const formatarMoeda = (valor) => {
-    if (typeof valor !== 'number') return 'R$ 0,00';
-    return valor.toLocaleString('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
+    const response = await api.post('/api/vendas', {
+      itens: itensVenda,
     });
-  };
 
-  const formatarData = (dataString) => {
-    try {
-      if (!dataString) return '';
-      const data = new Date(dataString);
-      if (isNaN(data.getTime())) return dataString;
-      return data.toLocaleDateString('pt-BR');
-    } catch (error) {
-      return dataString;
+    if (response.status === 200) {
+      limparCarrinho();
+      alert('Compra realizada com sucesso!');
     }
-  };
+  } catch (error) {
+    console.error('Erro ao finalizar a compra:', error);
+    alert('Erro ao processar a compra. Tente novamente.');
+  }
+};
 
-  const formatarHora = (dataString) => {
-    try {
-      if (!dataString) return '';
-      const data = new Date(dataString);
-      if (isNaN(data.getTime())) return '';
-      return data.toLocaleTimeString('pt-BR');
-    } catch (error) {
-      return '';
-    }
-  };
 
-  if (loading) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <div className="text-center py-8">
-            <p className="text-gray-500">Carregando dados...</p>
-          </div>
-        </div>
-      </div>
-    );
+  const calcularResumo = (vendasData) => {
+    const agora = new Date()
+    const vendasSemanais = vendasData.filter((venda) => {
+      const dataVenda = new Date(venda.dataVenda || venda.data)
+      const diferencaDias = (agora - dataVenda) / (1000 * 60 * 60 * 24)
+      return diferencaDias <= 7
+    })
+
+    const vendasMensais = vendasData.filter((venda) => {
+      const dataVenda = new Date(venda.dataVenda || venda.data)
+      const diferencaDias = (agora - dataVenda) / (1000 * 60 * 60 * 24)
+      return diferencaDias <= 30
+    })
+
+    setResumo({
+      semanal: vendasSemanais.length,
+      mensal: vendasMensais.length,
+    })
+  }
+
+  const calcularProdutos = (vendasData) => {
+    const produtosMap = {}
+    vendasData.forEach((venda) => {
+      if (!produtosMap[venda.produtoId]) {
+        produtosMap[venda.produtoId] = {
+          produtoId: venda.produtoId,
+          quantidade: 0
+        }
+      }
+      produtosMap[venda.produtoId].quantidade += venda.quantidade
+    })
+    setProdutos(Object.values(produtosMap))
+  }
+
+  const calcularTotalGeral = () => {
+    return vendasFiltradas.reduce((total, venda) => {
+      return total + ((venda.precoUnitario || 0) * (venda.quantidade || 0));
+    }, 0);
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="bg-white rounded-lg shadow-lg p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">Histórico de Vendas</h1>
-          <button 
-            onClick={fetchDados}
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-          >
-            Atualizar
-          </button>
+    <div className="container mx-auto px-2 py-4 min-h-screen">
+      {/* Filtro de datas */}
+      <section className="bg-white rounded-lg shadow-md p-6 mb-8 border border-blue-200 flex flex-col md:flex-row items-center gap-4">
+        <div className="flex flex-col md:flex-row items-center gap-2">
+          <label className="font-medium text-gray-700">Data início:</label>
+          <input type="date" value={dataInicio} onChange={e => setDataInicio(e.target.value)} className="border rounded px-2 py-1" />
         </div>
-
-        {/* Filtro por Período */}
-        <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-          <h2 className="text-lg font-semibold text-gray-700 mb-4">Filtrar por Período</h2>
-          <form onSubmit={handleFiltrar} className="flex gap-4 items-end">
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">Data Início</label>
-              <input
-                type="date"
-                name="dataInicio"
-                value={filtroData.dataInicio.toISOString().split('T')[0]}
-                onChange={handleFiltroChange}
-                className="border rounded px-3 py-2"
-              />
-            </div>
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">Data Fim</label>
-              <input
-                type="date"
-                name="dataFim"
-                value={filtroData.dataFim.toISOString().split('T')[0]}
-                onChange={handleFiltroChange}
-                className="border rounded px-3 py-2"
-              />
-            </div>
-            <button
-              type="submit"
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-            >
-              Filtrar
-            </button>
-          </form>
+        <div className="flex flex-col md:flex-row items-center gap-2">
+          <label className="font-medium text-gray-700">Data fim:</label>
+          <input type="date" value={dataFim} onChange={e => setDataFim(e.target.value)} className="border rounded px-2 py-1" />
         </div>
+        <button onClick={filtrarPorData} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">Filtrar</button>
+        <button onClick={() => { setDataInicio(''); setDataFim(''); setVendasFiltradas(vendas); calcularResumo(vendas); calcularProdutos(vendas); }} className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500 transition-colors">Limpar</button>
+      </section>
 
-        {error ? (
-          <div className="text-center py-8">
-            <p className="text-red-500">{error}</p>
-            <button 
-              onClick={fetchDados}
-              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-            >
-              Tentar Novamente
-            </button>
+      {/* Seção Resumo */}
+      <section className="rounded-lg shadow-md p-6 mb-8 bg-white border border-blue-200">
+        <h2 className="text-blue-600 text-2xl font-bold leading-tight mb-2">Resumo</h2>
+        <p className="text-gray-600">Vendas na última semana: {resumo.semanal}</p>
+        <p className="text-gray-600">Vendas nos últimos 30 dias: {resumo.mensal}</p>
+      </section>
+
+      {/* Botão para abrir o modal de produtos vendidos */}
+      <div className="flex justify-end mb-4">
+        <button onClick={() => setShowProdutosModal(true)} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors">
+          Ver Produtos Vendidos
+        </button>
+      </div>
+
+      {/* Modal de Produtos Vendidos */}
+      {showProdutosModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg shadow-lg p-6 max-w-3xl w-full max-h-[80vh] overflow-y-auto relative">
+            <button onClick={() => setShowProdutosModal(false)} className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-2xl font-bold">&times;</button>
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">Produtos Vendidos</h2>
+            {produtos.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-gray-600">Nenhum produto vendido</p>
+              </div>
+            ) : (
+              <table className="w-full border-collapse border border-gray-300">
+                <thead>
+                  <tr>
+                    <th className="border border-gray-300 px-4 py-2">Produto</th>
+                    <th className="border border-gray-300 px-4 py-2">Quantidade Vendida</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {produtos.map((produto, idx) => (
+                    <tr key={idx}>
+                      <td className="border border-gray-300 px-4 py-2">{produto.produtoId}</td>
+                      <td className="border border-gray-300 px-4 py-2">{produto.quantidade}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Seção Relatório Detalhado */}
+      <section className="bg-white rounded-lg shadow-lg p-4 max-w-6xl w-full mx-auto">
+        <h2 className="text-2xl font-bold text-gray-800 mb-6">Relatório de Vendas</h2>
+        {error && (
+          <div className="bg-red-100 text-red-700 p-4 rounded-lg mb-4">
+            {error}
+          </div>
+        )}
+        {loading ? (
+          <div className="flex justify-center items-center h-32">
+            <p className="text-gray-600">Carregando vendas...</p>
           </div>
         ) : (
-          <>
-            {/* Resumo Geral */}
-            {resumo && (
-              <div className="mb-8 p-4 bg-blue-50 rounded-lg">
-                <h2 className="text-xl font-bold text-gray-800 mb-4">Resumo Geral</h2>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="bg-white p-4 rounded-lg shadow">
-                    <p className="text-sm text-gray-600">Total de Vendas</p>
-                    <p className="text-2xl font-bold text-blue-600">{resumo.totalVendas || 0}</p>
-                  </div>
-                  <div className="bg-white p-4 rounded-lg shadow">
-                    <p className="text-sm text-gray-600">Valor Total</p>
-                    <p className="text-2xl font-bold text-green-600">{formatarMoeda(resumo.valorTotal || 0)}</p>
-                  </div>
-                  <div className="bg-white p-4 rounded-lg shadow">
-                    <p className="text-sm text-gray-600">Média por Venda</p>
-                    <p className="text-2xl font-bold text-purple-600">{formatarMoeda(resumo.mediaVendas || 0)}</p>
-                  </div>
-                  <div className="bg-white p-4 rounded-lg shadow">
-                    <p className="text-sm text-gray-600">Vendas Hoje</p>
-                    <p className="text-2xl font-bold text-orange-600">{resumo.vendasHoje || 0}</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Lista de Vendas */}
-            <div className="space-y-6">
-              {vendas.length === 0 ? (
-                <div className="text-center py-8">
-                  <p className="text-gray-500">Nenhuma venda encontrada no período selecionado.</p>
-                </div>
-              ) : (
-                vendas.map((venda) => (
-                  <div key={venda.id || Math.random()} className="border rounded-lg p-4 bg-white shadow">
-                    {/* Cabeçalho da Venda */}
-                    <div className="flex justify-between items-center mb-4">
-                      <h3 className="text-lg font-semibold text-gray-800">
-                        Venda #{venda.id || 'N/A'}
-                      </h3>
-                      <div className="text-sm text-gray-500">
-                        <span className="mr-2">{formatarData(venda.data)}</span>
-                        <span>{formatarHora(venda.data)}</span>
-                      </div>
-                    </div>
-
-                    {/* Lista de Itens */}
-                    <div className="mb-4">
-                      <h4 className="font-medium text-gray-700 mb-2">Itens:</h4>
-                      <div className="space-y-2">
-                        {Array.isArray(venda.itens) ? (
-                          venda.itens.map((item, index) => (
-                            <div key={index} className="flex justify-between text-sm">
-                              <div>
-                                <span className="text-gray-800">{item.nome || 'Produto sem nome'}</span>
-                                <span className="text-gray-500 ml-2">
-                                  (x{item.quantidade || 0})
-                                </span>
-                              </div>
-                              <div className="flex space-x-4">
-                                <span className="text-gray-600">
-                                  {formatarMoeda(item.precoUnitario || 0)} un
-                                </span>
-                                <span className="text-gray-800 font-medium">
-                                  {formatarMoeda(item.total || 0)}
-                                </span>
-                              </div>
-                            </div>
-                          ))
-                        ) : (
-                          <p className="text-gray-500">Nenhum item registrado</p>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Total */}
-                    <div className="border-t pt-3">
-                      <div className="flex justify-between font-semibold">
-                        <span className="text-gray-800">Total da Venda:</span>
-                        <span className="text-gray-800">{formatarMoeda(venda.total || 0)}</span>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
+          vendasFiltradas.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-600">Nenhuma venda registrada</p>
             </div>
-          </>
+          ) : (
+            <div className="max-h-[400px] overflow-y-auto rounded-lg border border-gray-300 w-full">
+              <table className="w-full border-collapse">
+                <thead className="bg-gray-100 sticky top-0 z-10">
+                  <tr>
+                    {vendasFiltradas[0] && Object.keys(vendasFiltradas[0]).map((campo, idx) => (
+                      <th key={idx} className="border border-gray-300 px-4 py-2">{campo}</th>
+                    ))}
+                    {vendasFiltradas[0] && vendasFiltradas[0].precoUnitario !== undefined && (
+                      <th className="border border-gray-300 px-4 py-2">Total</th>
+                    )}
+                  </tr>
+                </thead>
+                <tbody>
+                  {vendasFiltradas.map((venda, idx) => (
+                    <tr key={idx}>
+                      {Object.keys(venda).map((campo, i) => (
+                        <td key={i} className="border border-gray-300 px-4 py-2">{venda[campo]}</td>
+                      ))}
+                      {venda.precoUnitario !== undefined && (
+                        <td className="border border-gray-300 px-4 py-2 font-bold">
+                          R$ {(venda.precoUnitario * venda.quantidade).toFixed(2)}
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td colSpan={vendasFiltradas[0] ? Object.keys(vendasFiltradas[0]).length + (vendasFiltradas[0].precoUnitario !== undefined ? 1 : 0) : 1} className="border border-gray-300 px-4 py-2 font-bold text-right bg-gray-100 sticky bottom-0 z-10">
+                      Total Geral: R$ {calcularTotalGeral().toFixed(2)}
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          )
         )}
-      </div>
+      </section>
     </div>
-  );
+  )
 }
 
-export default Sales; 
+export default Sales
 

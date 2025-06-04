@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:5005',
+  baseURL: 'https://localhost:7223',
   timeout: 15000,
   headers: {
     'Content-Type': 'application/json',
@@ -159,6 +159,25 @@ export const finalizarCompra = async (venda) => {
     return response.data;
   } catch (error) {
     console.error('Erro detalhado ao finalizar compra:', {
+      message: error.message,
+      status: error.response?.status,
+      data: error.response?.data,
+      config: error.config,
+      dadosEnviados: venda
+    });
+    throw error;
+  }
+};
+
+// Função para registrar venda na tabela correta
+export const finalizarVenda = async (venda) => {
+  try {
+    console.log('Dados da venda a serem enviados:', venda);
+    const response = await api.post('/api/Venda', venda);
+    console.log('Resposta da API (finalizarVenda):', response);
+    return response.data;
+  } catch (error) {
+    console.error('Erro detalhado ao registrar venda:', {
       message: error.message,
       status: error.response?.status,
       data: error.response?.data,

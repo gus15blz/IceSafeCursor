@@ -13,8 +13,9 @@ function Home() {
   const { addToCart, setIsCartOpen } = useCart()
 
   useEffect(() => {
+    document.body.style.zoom = '60%';
     // Define o zoom para 75% quando o componente monta
-    document.body.style.zoom = '75%';
+    // document.body.style.zoom = '75%';
 
     // Retorna o zoom para 100% quando o componente desmonta
     return () => {

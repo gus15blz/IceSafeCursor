@@ -1,6 +1,6 @@
 // contexts/CartContext.js
 import React, { createContext, useContext, useState } from 'react';
-import api from '../services/api';
+import api, { finalizarVenda } from '../services/api';
 
 const CartContext = createContext();
 
@@ -67,26 +67,21 @@ export function CartProvider({ children }) {
    */
   const registrarVenda = async () => {
     try {
-      const novaVenda = {
-        data: new Date().toLocaleDateString('pt-BR'),
-        hora: new Date().toLocaleTimeString('pt-BR'),
-        itens: cart.map(item => ({
-          produtoId: item.id,
-          nome: item.nome,
-          quantidade: item.quantidadeNoCarrinho || 1,
-          precoUnitario: item.preco,
-          total: item.preco * (item.quantidadeNoCarrinho || 1)
-        })),
-        total: getTotal()
-      };
-      
-      // Salva a venda no banco de dados
-      const response = await api.post('/api/HistoricoVendas', novaVenda);
-      
-      // Adiciona a venda com o ID retornado ao estado local
-      setVendas(prevVendas => [...prevVendas, { ...novaVenda, id: response.data.id }]);
-      
-      return response.data;
+      // Gera data/hora no formato correto
+      const now = new Date();
+      const pad = (n, z = 2) => ("00" + n).slice(-z);
+      const ms = pad(now.getMilliseconds(), 6);
+      const dataVenda = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}.${ms}-03`;
+      // Monta o array de vendas
+      const vendasParaRegistrar = cart.map(item => ({
+        produtoId: item.id,
+        quantidade: item.quantidadeNoCarrinho || 1,
+        dataVenda
+      }));
+      // Salva a venda no banco de dados usando o endpoint correto
+      const response = await finalizarVenda(vendasParaRegistrar);
+      setVendas(prevVendas => [...prevVendas, ...vendasParaRegistrar]);
+      return response;
     } catch (error) {
       console.error('Erro ao registrar venda:', error);
       throw error;

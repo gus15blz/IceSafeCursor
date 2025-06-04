@@ -1,4 +1,4 @@
-import api from './services/api';
+import api from './services/api.js';
 
 // Teste de conexão com a API
 export const testApiConnection = async () => {
@@ -37,4 +37,17 @@ export const testCreateProduct = async () => {
     console.error('Erro ao criar produto:', error);
     throw error;
   }
-}; 
+};
+
+// Bloco para rodar o teste automaticamente se chamado via node
+if (import.meta.url === `file://${process.cwd().replace(/\\/g, '/')}/src/test-api.js`) {
+  testCreateProduct()
+    .then(res => {
+      console.log('Produto de teste cadastrado com sucesso:', res);
+      process.exit(0);
+    })
+    .catch(err => {
+      console.error('Erro ao cadastrar produto de teste:', err);
+      process.exit(1);
+    });
+} 
