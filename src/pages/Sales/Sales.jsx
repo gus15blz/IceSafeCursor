@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+
 import { useCart } from '../contexts/CartContext';
-import { finalizarVenda } from '../../services/api';
+
 
 function Sales() {
   // Pega as vendas do contexto
@@ -11,11 +11,7 @@ function Sales() {
    * @param {Array} itens - Array de itens da venda
    * @returns {number} - Total da venda
    */
-  const calcularTotal = (itens) => {
-    return itens.reduce((total, item) => 
-      total + (item.preco * item.quantidade), 0
-    );
-  };
+  
 
   /**
    * Formata valor para moeda brasileira
