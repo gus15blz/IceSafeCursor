@@ -67,21 +67,16 @@ export function CartProvider({ children }) {
    */
   const registrarVenda = async () => {
     try {
-      // Gera data/hora no formato correto
-      const now = new Date();
-      const pad = (n, z = 2) => ("00" + n).slice(-z);
-      const ms = pad(now.getMilliseconds(), 6);
-      const dataVenda = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}.${ms}-03`;
-      // Monta o array de vendas
-      const vendasParaRegistrar = cart.map(item => ({
-        produtoId: item.id,
-        quantidade: item.quantidadeNoCarrinho || 1,
-        dataVenda
-      }));
-      // Salva a venda no banco de dados usando o endpoint correto
-      const response = await finalizarVenda(vendasParaRegistrar);
-      setVendas(prevVendas => [...prevVendas, ...vendasParaRegistrar]);
-      return response;
+      for (const item of cart) {
+        const venda = {
+          produtoId: item.id,
+          quantidade: item.quantidadeNoCarrinho || 1,
+          valorTotal: (item.preco || 0) * (item.quantidadeNoCarrinho || 1)
+        };
+        await finalizarVenda(venda);
+      }
+      setVendas([]); // Limpa vendas locais após registrar
+      return true;
     } catch (error) {
       console.error('Erro ao registrar venda:', error);
       throw error;

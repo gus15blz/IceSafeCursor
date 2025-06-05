@@ -2,18 +2,20 @@
 /* eslint-disable no-unused-vars */
 import  { useState, useEffect } from 'react'
 import api from '../../services/api'
+import { useCart } from '../../contexts/CartContext';
 
 function Sales() {
   const [, setVendas] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [resumo, setResumo] = useState({ semanal: 0, mensal: 0 })
+  const [resumo, setResumo] = useState({ semanal: 0, mensal: 0, totalGeral: 0, totalSemanal: 0, totalMensal: 0 })
   const [produtos, setProdutos] = useState([])
   const [vendas, setVendasState] = useState([])
   const [dataInicio, setDataInicio] = useState('')
   const [dataFim, setDataFim] = useState('')
   const [vendasFiltradas, setVendasFiltradas] = useState([])
   const [showProdutosModal, setShowProdutosModal] = useState(false)
+  const { cart, clearCart } = useCart();
 
   useEffect(() => {
     document.body.style.zoom = '60%';
@@ -63,46 +65,62 @@ function Sales() {
   }
 
   const finalizarCompra = async () => {
-  try {
-    const itensVenda = carrinho.map((item) => ({
-      produtoId: item.id,
-      quantidade: item.quantidade,
-      preco: item.preco,
-      produtoNome: item.nome,
-    }));
+    try {
+      const itensVenda = cart.map((item) => ({
+        produtoId: item.id,
+        quantidade: item.quantidadeNoCarrinho || item.quantidade || 1,
+        preco: item.preco,
+      }));
 
-    const response = await api.post('/api/vendas', {
-      itens: itensVenda,
-    });
+      const response = await api.post('/api/vendas', {
+        itens: itensVenda,
+      });
 
-    if (response.status === 200) {
-      limparCarrinho();
-      alert('Compra realizada com sucesso!');
+      if (response.status === 200) {
+        clearCart();
+        alert('Compra realizada com sucesso!');
+      }
+    } catch (error) {
+      console.error('Erro ao finalizar a compra:', error);
+      alert('Erro ao processar a compra. Tente novamente.');
     }
-  } catch (error) {
-    console.error('Erro ao finalizar a compra:', error);
-    alert('Erro ao processar a compra. Tente novamente.');
-  }
-};
-
+  };
 
   const calcularResumo = (vendasData) => {
     const agora = new Date()
+    let totalGeral = 0;
+    let totalSemanal = 0;
+    let totalMensal = 0;
     const vendasSemanais = vendasData.filter((venda) => {
       const dataVenda = new Date(venda.dataVenda || venda.data)
       const diferencaDias = (agora - dataVenda) / (1000 * 60 * 60 * 24)
-      return diferencaDias <= 7
+      const isSemanal = diferencaDias <= 7;
+      if (isSemanal) {
+        totalSemanal += (venda.preco || 0) * (venda.quantidade || 0);
+      }
+      return isSemanal;
     })
 
     const vendasMensais = vendasData.filter((venda) => {
       const dataVenda = new Date(venda.dataVenda || venda.data)
       const diferencaDias = (agora - dataVenda) / (1000 * 60 * 60 * 24)
-      return diferencaDias <= 30
+      const isMensal = diferencaDias <= 30;
+      if (isMensal) {
+        totalMensal += (venda.preco || 0) * (venda.quantidade || 0);
+      }
+      return isMensal;
     })
+
+    totalGeral = vendasData.reduce((total, venda) => {
+      return total + ((venda.preco || 0) * (venda.quantidade || 0));
+    }, 0);
 
     setResumo({
       semanal: vendasSemanais.length,
       mensal: vendasMensais.length,
+      totalGeral,
+      totalSemanal,
+      totalMensal
     })
   }
 
@@ -122,9 +140,17 @@ function Sales() {
 
   const calcularTotalGeral = () => {
     return vendasFiltradas.reduce((total, venda) => {
-      return total + ((venda.precoUnitario || 0) * (venda.quantidade || 0));
+      return total + ((venda.preco || 0) * (venda.quantidade || 0));
     }, 0);
   }
+
+  // Função utilitária para formatar moeda
+  const formatarMoeda = (valor) => {
+    return Number(valor).toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    });
+  };
 
   return (
     <div className="container mx-auto px-2 py-4 min-h-screen">
@@ -145,8 +171,9 @@ function Sales() {
       {/* Seção Resumo */}
       <section className="rounded-lg shadow-md p-6 mb-8 bg-white border border-blue-200">
         <h2 className="text-blue-600 text-2xl font-bold leading-tight mb-2">Resumo</h2>
-        <p className="text-gray-600">Vendas na última semana: {resumo.semanal}</p>
-        <p className="text-gray-600">Vendas nos últimos 30 dias: {resumo.mensal}</p>
+        <p className="text-gray-600">Vendas na última semana: {resumo.semanal} | Valor: R$ {resumo.totalSemanal.toFixed(2)}</p>
+        <p className="text-gray-600">Vendas nos últimos 30 dias: {resumo.mensal} | Valor: R$ {resumo.totalMensal.toFixed(2)}</p>
+        <p className="text-gray-600 font-bold">Valor total de todas as vendas: R$ {resumo.totalGeral.toFixed(2)}</p>
       </section>
 
       {/* Botão para abrir o modal de produtos vendidos */}
@@ -210,32 +237,26 @@ function Sales() {
               <table className="w-full border-collapse">
                 <thead className="bg-gray-100 sticky top-0 z-10">
                   <tr>
-                    {vendasFiltradas[0] && Object.keys(vendasFiltradas[0]).map((campo, idx) => (
-                      <th key={idx} className="border border-gray-300 px-4 py-2">{campo}</th>
-                    ))}
-                    {vendasFiltradas[0] && vendasFiltradas[0].precoUnitario !== undefined && (
-                      <th className="border border-gray-300 px-4 py-2">Total</th>
-                    )}
+                    <th className="border border-gray-300 px-4 py-2">Produto</th>
+                    <th className="border border-gray-300 px-4 py-2">Quantidade</th>
+                    <th className="border border-gray-300 px-4 py-2">Valor Total</th>
+                    <th className="border border-gray-300 px-4 py-2">Data/Hora</th>
                   </tr>
                 </thead>
                 <tbody>
                   {vendasFiltradas.map((venda, idx) => (
                     <tr key={idx}>
-                      {Object.keys(venda).map((campo, i) => (
-                        <td key={i} className="border border-gray-300 px-4 py-2">{venda[campo]}</td>
-                      ))}
-                      {venda.precoUnitario !== undefined && (
-                        <td className="border border-gray-300 px-4 py-2 font-bold">
-                          R$ {(venda.precoUnitario * venda.quantidade).toFixed(2)}
-                        </td>
-                      )}
+                      <td className="border border-gray-300 px-4 py-2">{venda.produtoId}</td>
+                      <td className="border border-gray-300 px-4 py-2">{venda.quantidade}</td>
+                      <td className="border border-gray-300 px-4 py-2 font-bold">{formatarMoeda(venda.valorTotal)}</td>
+                      <td className="border border-gray-300 px-4 py-2">{venda.dataHora ? new Date(venda.dataHora).toLocaleString('pt-BR') : '-'}</td>
                     </tr>
                   ))}
                 </tbody>
                 <tfoot>
                   <tr>
-                    <td colSpan={vendasFiltradas[0] ? Object.keys(vendasFiltradas[0]).length + (vendasFiltradas[0].precoUnitario !== undefined ? 1 : 0) : 1} className="border border-gray-300 px-4 py-2 font-bold text-right bg-gray-100 sticky bottom-0 z-10">
-                      Total Geral: R$ {calcularTotalGeral().toFixed(2)}
+                    <td colSpan={4} className="border border-gray-300 px-4 py-2 font-bold text-right bg-gray-100 sticky bottom-0 z-10">
+                      Total Geral: {formatarMoeda(vendasFiltradas.reduce((total, venda) => total + (venda.valorTotal || 0), 0))}
                     </td>
                   </tr>
                 </tfoot>
