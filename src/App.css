@@ -4,14 +4,12 @@
   margin: 0;
   padding: 0;
   text-align: center;
-  overflow-x: hidden;
 }
 
 body {
   margin: 0;
   padding: 0;
   min-height: 100vh;
-  overflow-x: hidden;
 }
 
 .logo {
@@ -92,9 +90,7 @@ body {
 
 .content-container {
   width: 100%;
-  max-width: 100%;
   padding: 1rem;
-  margin: 0;
   box-sizing: border-box;
 }
 
@@ -127,27 +123,23 @@ body {
 /* Ajustes para garantir que o conteúdo não ultrapasse a largura da tela */
 * {
   box-sizing: border-box;
-  max-width: 100%;
 }
 
 /* Ajustes para o layout principal */
 .min-h-screen {
   min-height: 100vh;
   width: 100%;
-  overflow-x: hidden;
 }
 
 /* Ajustes para o conteúdo principal */
 .flex-grow {
   flex: 1;
   width: 100%;
-  overflow-x: hidden;
 }
 
 /* Ajustes para as seções */
 section {
   width: 100%;
-  max-width: 100%;
   margin: 0;
   padding: 1rem;
   box-sizing: border-box;
@@ -155,8 +147,6 @@ section {
 
 /* Ajustes para os cards */
 .bg-white {
-  width: 100%;
-  max-width: 100%;
   margin: 0;
   box-sizing: border-box;
 }

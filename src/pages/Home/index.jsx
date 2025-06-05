@@ -13,14 +13,10 @@ function Home() {
   const { addToCart, setIsCartOpen } = useCart()
 
   useEffect(() => {
-    document.body.style.zoom = '60%';
-    // Define o zoom para 75% quando o componente monta
-    // document.body.style.zoom = '75%';
-
-    // Retorna o zoom para 100% quando o componente desmonta
-    return () => {
-      document.body.style.zoom = '100%';
-    };
+    // Removido o ajuste de zoom para garantir responsividade real
+    // Caso queira aplicar estilos globais, utilize classes CSS ou Tailwind
+    // Responsividade agora depende apenas do grid e do container
+    return () => {};
   }, []);
 
   useEffect(() => {
@@ -105,15 +101,14 @@ function Home() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Seção Inicial */}
+    <div className="w-full px-4 pb-8 pt-24">
+      {/* Bloco de boas-vindas */}
+      <div style={{height: '500px'}}></div>
       <section className="rounded-lg shadow-md p-6 mb-8 bg-white border border-blue-200">
-        <div className="flex items-center justify-between gap-6">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex-1">
             <h1 className="text-blue-600 text-3xl font-bold leading-tight">
-              SNACKS RÁPIDOS PARA
-              <br />
-              SEU TRABALHO
+              SNACKS RÁPIDOS PARA<br />SEU TRABALHO
             </h1>
             <p className="text-gray-600 mt-2">
               Encontre as melhores opções de lanches para seu dia a dia
@@ -130,7 +125,7 @@ function Home() {
       </section>
 
       {/* Seção de Produtos */}
-      <section className="bg-white rounded-lg shadow-lg p-6">
+      <section className="bg-white rounded-lg shadow-lg p-6 mt-8">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-800">Produtos Disponíveis</h2>
           {message.text && (
@@ -157,11 +152,11 @@ function Home() {
             <p className="text-gray-600">Nenhum produto disponível</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid gap-6" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
             {produtos.map((produto) => {
               const estoqueDisponivel = getEstoqueDisponivel(produto)
               return (
-                <div key={produto.id} className="border rounded-lg hover:shadow-lg transition-shadow duration-300">
+                <div key={produto.id} className="border rounded-lg hover:shadow-lg transition-shadow duration-300 flex flex-col min-h-[370px] bg-white">
                   {produto.imgLink && (
                     <img 
                       src={produto.imgLink} 
@@ -169,7 +164,7 @@ function Home() {
                       className="w-full h-48 object-cover rounded-t-lg"
                     />
                   )}
-                  <div className="p-4">
+                  <div className="p-4 flex flex-col flex-1">
                     <h3 className="font-bold text-lg mb-2">{produto.nome}</h3>
                     <p className="text-gray-700 text-lg mb-1">R$ {produto.preco?.toFixed(2)}</p>
                     <p className={`text-sm mb-4 ${estoqueDisponivel > 0 ? 'text-green-600' : 'text-red-600'}`}>
@@ -178,7 +173,7 @@ function Home() {
                     <button
                       onClick={() => handleAddToCart(produto)}
                       disabled={estoqueDisponivel <= 0}
-                      className={`w-full py-2 px-4 rounded-md flex items-center justify-center text-sm font-medium transition-colors duration-200
+                      className={`mt-auto w-full py-2 px-4 rounded-md flex items-center justify-center text-sm font-medium transition-colors duration-200
                         ${estoqueDisponivel > 0 
                           ? 'bg-green-600 text-white hover:bg-green-700' 
                           : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}

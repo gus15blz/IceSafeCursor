@@ -387,35 +387,46 @@ function ProductForm() {
         ) : produtos.length === 0 ? (
           <p className="text-center text-gray-600">Nenhum produto cadastrado</p>
         ) : (
-          <div className="space-y-4">
-            {produtos.map((produto) => (
-              <div 
-                key={produto.id} 
-                className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
-              >
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-gray-900">{produto.nome}</h3>
-                  <div className="mt-1 text-sm text-gray-600">
-                    <span className="mr-4">Preço: R$ {produto.preco.toFixed(2)}</span>
-                    <span>Quantidade: {produto.quantidade}</span>
-                  </div>
-                </div>
-                <div className="flex space-x-2">
-                  <button
-                    onClick={() => handleEdit(produto)}
-                    className="px-4 py-2 text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md transition-colors"
-                  >
-                    Editar
-                  </button>
-                  <button
-                    onClick={() => handleDelete(produto.id)}
-                    className="px-4 py-2 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded-md transition-colors"
-                  >
-                    Excluir
-                  </button>
-                </div>
-              </div>
-            ))}
+          <div className="w-full overflow-x-auto">
+            <table className="min-w-[600px] w-full border-collapse">
+              <thead className="bg-gray-100 sticky top-0 z-20">
+                <tr>
+                  <th className="border border-gray-300 px-4 py-2 sticky top-0 left-0 bg-gray-100 z-30">Nome</th>
+                  <th className="border border-gray-300 px-4 py-2 sticky top-0 bg-gray-100 z-20">Preço</th>
+                  <th className="border border-gray-300 px-4 py-2 sticky top-0 bg-gray-100 z-20">Quantidade</th>
+                  <th className="border border-gray-300 px-4 py-2 sticky top-0 bg-gray-100 z-20">Imagem</th>
+                  <th className="border border-gray-300 px-4 py-2 sticky top-0 bg-gray-100 z-20">Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                {produtos.map((produto) => (
+                  <tr key={produto.id}>
+                    <td className="border border-gray-300 px-4 py-2">{produto.nome}</td>
+                    <td className="border border-gray-300 px-4 py-2">R$ {produto.preco.toFixed(2)}</td>
+                    <td className="border border-gray-300 px-4 py-2">{produto.quantidade}</td>
+                    <td className="border border-gray-300 px-4 py-2">
+                      {produto.imgLink && (
+                        <img src={produto.imgLink} alt={produto.nome} className="w-16 h-16 object-cover rounded" />
+                      )}
+                    </td>
+                    <td className="border border-gray-300 px-4 py-2">
+                      <button
+                        onClick={() => handleEdit(produto)}
+                        className="px-3 py-1 text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md transition-colors mr-2"
+                      >
+                        Editar
+                      </button>
+                      <button
+                        onClick={() => handleDelete(produto.id)}
+                        className="px-3 py-1 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded-md transition-colors"
+                      >
+                        Excluir
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>

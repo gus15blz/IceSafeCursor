@@ -11,6 +11,7 @@ function Inventory() {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      <div style={{height: '700px'}}></div>
       <section className="bg-white rounded-lg shadow-lg p-6">
         <h1 className="text-2xl font-bold text-gray-800 mb-4">Controle de Estoque</h1>
         <ProductForm />

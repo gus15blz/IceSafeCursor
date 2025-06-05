@@ -233,14 +233,14 @@ function Sales() {
               <p className="text-gray-600">Nenhuma venda registrada</p>
             </div>
           ) : (
-            <div className="max-h-[400px] overflow-y-auto rounded-lg border border-gray-300 w-full">
-              <table className="w-full border-collapse">
-                <thead className="bg-gray-100 sticky top-0 z-10">
+            <div className="max-h-[400px] rounded-lg border border-gray-300 w-full overflow-x-auto">
+              <table className="min-w-[600px] w-full border-collapse">
+                <thead className="bg-gray-100 sticky top-0 z-20">
                   <tr>
-                    <th className="border border-gray-300 px-4 py-2">Produto</th>
-                    <th className="border border-gray-300 px-4 py-2">Quantidade</th>
-                    <th className="border border-gray-300 px-4 py-2">Valor Total</th>
-                    <th className="border border-gray-300 px-4 py-2">Data/Hora</th>
+                    <th className="border border-gray-300 px-4 py-2 sticky top-0 left-0 bg-gray-100 z-30">Produto</th>
+                    <th className="border border-gray-300 px-4 py-2 sticky top-0 bg-gray-100 z-20">Quantidade</th>
+                    <th className="border border-gray-300 px-4 py-2 sticky top-0 bg-gray-100 z-20">Valor Total</th>
+                    <th className="border border-gray-300 px-4 py-2 sticky top-0 bg-gray-100 z-20">Data/Hora</th>
                   </tr>
                 </thead>
                 <tbody>
