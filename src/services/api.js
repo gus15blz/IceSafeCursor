@@ -8,7 +8,7 @@ const api = axios.create({
     'Accept': 'application/json'
   }
 });
-
+/*
 const handleFinalizar = async () => {
   try {
     await finalizarCompra(carrinho);
@@ -18,7 +18,7 @@ const handleFinalizar = async () => {
     alert("Erro ao finalizar compra.");
   }
 };
-
+*/
 // Produtos
 export const getProdutos = () => api.get('/api/produto');
 export const getProdutoById = (id) => api.get(`/api/produto/${id}`);
