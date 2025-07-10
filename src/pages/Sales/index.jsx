@@ -266,8 +266,7 @@ function Sales() {
         )}
       </section>
     </div>
-  )
+  );
 }
 
 export default Sales
-
