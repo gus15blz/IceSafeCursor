@@ -1,59 +1,61 @@
-import { useState } from 'react'
-import axios from 'axios'
-import './App.css'
+import React from 'react'
+import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom'
 import Home from './pages/Home'
-import Inventory from './pages/Inventory'
 import Sales from './pages/Sales'
+import ProductForm from './components/ProductForm'
+import { CartProvider, useCart } from './contexts/CartContext'
+import './App.css'
+import Inventory from './pages/Inventory'
 import CartModal from './components/CartModal'
 import PasswordModal from './components/PasswordModal'
 import logo from './images/logo.png'
 import carrinhoIcon from './images/carrinho.png'
 
-function App() {
-  const [currentPage, setCurrentPage] = useState('home')
-  const [isCartOpen, setIsCartOpen] = useState(false)
-  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false)
+// Componente de Navegação separado para usar os hooks do router
+function Navigation() {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const { isCartOpen, setIsCartOpen } = useCart()
+  const [isInventoryPasswordModalOpen, setIsInventoryPasswordModalOpen] = React.useState(false)
+  const [isSalesPasswordModalOpen, setIsSalesPasswordModalOpen] = React.useState(false)
 
   const handleInventoryAccess = () => {
-    setIsPasswordModalOpen(true)
+    setIsInventoryPasswordModalOpen(true)
   }
 
-  const handlePasswordSuccess = () => {
-    setCurrentPage('inventory')
+  const handleSalesAccess = () => {
+    setIsSalesPasswordModalOpen(true)
   }
 
-  const renderPage = () => {
-    switch (currentPage) {
-      case 'home':
-        return <Home />
-      case 'inventory':
-        return <Inventory />
-      case 'sales':
-        return <Sales />
-      default:
-        return <Home />
-    }
+  const handleInventoryPasswordSuccess = () => {
+    navigate('/estoque')
+    setIsInventoryPasswordModalOpen(false)
+  }
+
+  const handleSalesPasswordSuccess = () => {
+    navigate('/vendas')
+    setIsSalesPasswordModalOpen(false)
   }
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#c4e4f7' }}>
-      {/* Navegação */}
-      <nav className="bg-white shadow-md sticky top-0 z-50">
-        <div className="w-full max-w-7xl mx-auto px-4 py-4">
+    <>
+      <nav className="bg-white shadow-md sticky top-0 z-50 w-full">
+        <div className="nav-container">
           <div className="flex justify-between items-center">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <img 
                 src={logo} 
                 alt="Ice Safe Logo" 
-                className="h-16 w-auto"
+                className="nav-logo cursor-pointer"
+                onClick={() => navigate('/')}
               />
-              <h1 className="text-2xl font-bold text-gray-800">Ice Safe</h1>
+              <h1 className="text-xl font-bold text-gray-800">Ice Safe</h1>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2">
               <button 
-                onClick={() => setCurrentPage('home')}
-                className={`px-4 py-2 rounded-lg transition-colors ${
-                  currentPage === 'home' 
+                onClick={() => navigate('/')}
+                className={`nav-button rounded-lg transition-colors ${
+                  location.pathname === '/' 
                     ? 'bg-blue-500 text-white' 
                     : 'text-gray-600 hover:bg-gray-100'
                 }`}
@@ -62,8 +64,8 @@ function App() {
               </button>
               <button 
                 onClick={handleInventoryAccess}
-                className={`px-4 py-2 rounded-lg transition-colors ${
-                  currentPage === 'inventory' 
+                className={`nav-button rounded-lg transition-colors ${
+                  location.pathname === '/estoque' 
                     ? 'bg-blue-500 text-white' 
                     : 'text-gray-600 hover:bg-gray-100'
                 }`}
@@ -71,9 +73,9 @@ function App() {
                 Estoque
               </button>
               <button 
-                onClick={() => setCurrentPage('sales')}
-                className={`px-4 py-2 rounded-lg transition-colors ${
-                  currentPage === 'sales' 
+                onClick={handleSalesAccess}
+                className={`nav-button rounded-lg transition-colors ${
+                  location.pathname === '/vendas' 
                     ? 'bg-blue-500 text-white' 
                     : 'text-gray-600 hover:bg-gray-100'
                 }`}
@@ -82,12 +84,12 @@ function App() {
               </button>
               <button 
                 onClick={() => setIsCartOpen(true)}
-                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                className="p-2 rounded-lg hover:bg-gray-100 transition-colors relative"
               >
                 <img 
                   src={carrinhoIcon} 
                   alt="Carrinho" 
-                  className="h-8 w-auto"
+                  className="h-6 w-auto"
                 />
               </button>
             </div>
@@ -95,31 +97,80 @@ function App() {
         </div>
       </nav>
 
-      {/* Conteúdo Principal */}
-      <main className="flex-grow">
-        {renderPage()}
-      </main>
-
-      {/* Rodapé */}
-      <footer className="bg-gray-800 text-white">
-        <div className="w-full max-w-7xl mx-auto px-4 py-6">
-          <p className="text-center">&copy; 2024 Ice Safe. Todos os direitos reservados.</p>
-        </div>
-      </footer>
-
       {/* Modal do Carrinho */}
       <CartModal 
         isOpen={isCartOpen} 
         onClose={() => setIsCartOpen(false)} 
       />
 
-      {/* Modal de Senha */}
+      {/* Modal de Senha para Estoque */}
       <PasswordModal
-        isOpen={isPasswordModalOpen}
-        onClose={() => setIsPasswordModalOpen(false)}
-        onSuccess={handlePasswordSuccess}
+        isOpen={isInventoryPasswordModalOpen}
+        onClose={() => setIsInventoryPasswordModalOpen(false)}
+        onSuccess={handleInventoryPasswordSuccess}
       />
+
+      {/* Modal de Senha para Vendas */}
+      <PasswordModal
+        isOpen={isSalesPasswordModalOpen}
+        onClose={() => setIsSalesPasswordModalOpen(false)}
+        onSuccess={handleSalesPasswordSuccess}
+      />
+    </>
+  )
+}
+
+// Layout padrão que inclui a navegação
+function DefaultLayout({ children }) {
+  return (
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#c4e4f7' }}>
+      <Navigation />
+      <main className="flex-grow w-full">
+        <div className="content-container">
+          {children}
+        </div>
+      </main>
+      <footer className="footer bg-white border-t text-gray-600 w-full">
+        <div className="content-container">
+          <p className="text-center">&copy; 2024 Ice Safe. Todos os direitos reservados.</p>
+        </div>
+      </footer>
     </div>
+  )
+}
+
+// Componente principal
+function MainApp() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={
+          <DefaultLayout>
+            <Home />
+          </DefaultLayout>
+        } />
+        <Route path="/estoque" element={
+          <DefaultLayout>
+            <Inventory />
+          </DefaultLayout>
+        } />
+        <Route path="/vendas" element={
+          <DefaultLayout>
+            <Sales />
+          </DefaultLayout>
+        } />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Router>
+  )
+}
+
+// Componente App que envolve tudo com o CartProvider
+function App() {
+  return (
+    <CartProvider>
+      <MainApp />
+    </CartProvider>
   )
 }
 

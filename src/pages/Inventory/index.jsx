@@ -1,13 +1,21 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import ProductForm from '../../components/ProductForm'
 
 function Inventory() {
+  useEffect(() => {
+    document.body.style.zoom = '70%';
+    return () => {
+      document.body.style.zoom = '100%';
+    };
+  }, []);
+
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 py-8">
-      <div className="bg-white rounded-lg shadow-lg p-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-8">Controle de Estoque</h1>
+    <div className="container mx-auto px-4 py-8">
+      <div style={{height: '700px'}}></div>
+      <section className="bg-white rounded-lg shadow-lg p-6">
+        <h1 className="text-2xl font-bold text-gray-800 mb-4">Controle de Estoque</h1>
         <ProductForm />
-      </div>
+      </section>
     </div>
   )
 }
